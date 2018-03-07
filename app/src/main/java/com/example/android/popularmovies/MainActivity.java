@@ -5,10 +5,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
+
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
    private void initQuery (){
        String sortBy = "popularity.desc";
        URL tmdbQueryUrl = NetworkUtils.buildUrl(sortBy);
-       mUrlDisplayTextView.setText(tmdbQueryUrl.toString());
+       //mUrlDisplayTextView.setText(tmdbQueryUrl.toString());
        new TmdbQueryTask().execute(tmdbQueryUrl);
    }
 
@@ -51,7 +56,14 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String tmdbQueryResults) {
             if (tmdbQueryResults != null && !tmdbQueryResults.equals("")) {
                 mSearchResultsTextView.setText(tmdbQueryResults);
+                try {
+                    List<Movie> json = JsonUtils.parseMovieList(tmdbQueryResults);
+                    mUrlDisplayTextView.setText(json.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+
         }
     }
 
