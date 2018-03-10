@@ -23,29 +23,49 @@ public class NetworkUtils {
     final static String MOVIE_DISCOVER_BASE_URL =
             "https://api.themoviedb.org/3/discover/movie";
 
-    final static String QUERY_PARAM = "api_key";
+    final static String API_KEY_PARAM = "api_key";
     final static String apiKey = "053875c05af844b2914df74028efb926";
 
     final static String PARAM_SORT = "sort_by";
     //final static String sortBy = "popularity.desc";
 
-    private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/.";
+    private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
+    private static final String IMAGE_SIZE_PATH = "w185/";
 
-    public static URL buildUrl(String sortBy) {
+
+    public static URL buildSortedUrl(String sortBy) {
         Uri builtUri = Uri.parse(MOVIE_DISCOVER_BASE_URL).buildUpon()
-                .appendQueryParameter(QUERY_PARAM, apiKey)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
                 .appendQueryParameter(PARAM_SORT, sortBy)
                 .build();
 
-        URL url = null;
+        URL sortedUrl = null;
         try {
-            url = new URL(builtUri.toString());
+            sortedUrl = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Built URI " + url);
-        return url;
+        Log.v(TAG, "Built URI " + sortedUrl);
+        return sortedUrl;
     }
+
+    public static URL buildImageUrl (String backDropPath){
+        Uri builtUri = Uri.parse(IMAGE_BASE_URL).buildUpon()
+                .appendPath(IMAGE_SIZE_PATH)
+                .appendPath(backDropPath)
+                .build();
+
+        URL imageUrl = null;
+        try {
+            imageUrl = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.v(TAG, "Built URI " + imageUrl);
+        return imageUrl;
+    }
+
+
 
 
     public static String getResponseFromHttpUrl (URL url) throws IOException {

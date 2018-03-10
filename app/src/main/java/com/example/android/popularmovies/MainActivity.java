@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
    private void initQuery (){
        String sortBy = "popularity.desc";
-       URL tmdbQueryUrl = NetworkUtils.buildUrl(sortBy);
+       URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
        //mUrlDisplayTextView.setText(tmdbQueryUrl.toString());
        new TmdbQueryTask().execute(tmdbQueryUrl);
    }

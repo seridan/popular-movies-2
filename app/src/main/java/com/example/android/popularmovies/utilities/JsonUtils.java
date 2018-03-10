@@ -24,6 +24,7 @@ public class JsonUtils {
     private static final String VOTE_AVERAGE = "vote_average";
     private static final String RELEASE_DATE = "release_date";
     private static final String RESULTS = "results";
+    private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w85";
     private static final String TAG = JsonUtils.class.toString();
 
 
@@ -42,7 +43,7 @@ public class JsonUtils {
                 parseMovie.setBackDropPath(movieObject.optString(BACKDROP_PATH));
                 parseMovie.setOverview(movieObject.optString(OVERVIEW));
                 parseMovie.setVote_average(movieObject.optDouble(VOTE_AVERAGE));
-                parseMovie.setReleaseDate(movieObject.getString(RELEASE_DATE));
+                parseMovie.setReleaseDate(movieObject.optString(RELEASE_DATE));
 
                 parseMovieList.add(parseMovie);
             }
