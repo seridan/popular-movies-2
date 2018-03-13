@@ -1,9 +1,11 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
@@ -17,53 +19,61 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mUrlDisplayTextView;
+private RecyclerView mRecyclerView;
 
-    private TextView mSearchResultsTextView;
+private PopularMoviesAdapter mPopularMoviesAdapter;
+
+private Context mContext;
+
+private List<Movie> movieList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mUrlDisplayTextView = (TextView) findViewById(R.id.textViewUrl);
-        mSearchResultsTextView = (TextView) findViewById(R.id.textViewResults);
-        initQuery();
+        mRecyclerView = findViewById(R.id.recyclerview_images_movies);
+        mRecyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
+        mRecyclerView.setHasFixedSize(true);
+        mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList);
+        mRecyclerView.setAdapter(mPopularMoviesAdapter);
+
+        loadMoviesData();
+
     }
 
-   private void initQuery (){
-       String sortBy = "popularity.desc";
-       URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
-       //mUrlDisplayTextView.setText(tmdbQueryUrl.toString());
-       new TmdbQueryTask().execute(tmdbQueryUrl);
-   }
+    private void loadMoviesData() {
+        String sortBy = "popularity.desc";
+        URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
+        new FetchMoviesTask().execute(tmdbQueryUrl);
 
-    public class TmdbQueryTask extends AsyncTask<URL, Void, String> {
+    }
+
+    public class FetchMoviesTask extends AsyncTask<URL, Void, List<Movie>> {
 
         @Override
-        protected String doInBackground(URL... urls) {
+        protected List<Movie> doInBackground(URL... urls) {
+
             URL searchUrl = urls[0];
-            String tmdbQueryResults = null;
+            String tmdbQueryResult;
             try {
-                tmdbQueryResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+                tmdbQueryResult = NetworkUtils.getResponseFromHttpUrl(searchUrl);
+
+                movieList = JsonUtils.parseMovieList(tmdbQueryResult);
+
+                return movieList;
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            return tmdbQueryResults;
+
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String tmdbQueryResults) {
-            if (tmdbQueryResults != null && !tmdbQueryResults.equals("")) {
-                mSearchResultsTextView.setText(tmdbQueryResults);
-                try {
-                    List<Movie> json = JsonUtils.parseMovieList(tmdbQueryResults);
-                    mUrlDisplayTextView.setText(json.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
+        protected void onPostExecute(List<Movie> movieList) {
+            mPopularMoviesAdapter.setMovieList(movieList);
         }
     }
 

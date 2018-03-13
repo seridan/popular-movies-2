@@ -15,7 +15,7 @@ public class PicassoUtils {
     public static void getImageFromUrl (Context context, String url, ImageView imageView){
 
         if (url != null && url.length() > 0){
-            Picasso.with(context).load(url).placeholder(R.mipmap.ic_launcher).into(imageView);
+            Picasso.with(context).load(url).into(imageView);
 
         }else {
             Picasso.with(context).load(R.mipmap.ic_launcher).into(imageView);

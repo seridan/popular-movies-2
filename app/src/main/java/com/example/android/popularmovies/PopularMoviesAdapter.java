@@ -11,7 +11,7 @@ import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.PicassoUtils;
 
-import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,12 +19,13 @@ import java.util.List;
  */
 class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.PopularMoviesViewHolder>{
 
-    private List<Movie> movieList;
-    private final Context mContext;
+    private List<Movie> mMovieList;
+    private Context context;
 
-    public PopularMoviesAdapter(List<Movie> movieList, Context mContext) {
-        this.movieList = movieList;
-        this.mContext = mContext;
+
+    public PopularMoviesAdapter(Context context, List<Movie> mMovieList) {
+        this.context = context;
+        this.mMovieList = mMovieList;
     }
 
     @Override
@@ -44,16 +45,19 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
     @Override
     public void onBindViewHolder(PopularMoviesViewHolder holder, int position) {
         String urlBackDrop;
-        urlBackDrop = NetworkUtils.buildImageUrl(movieList.get(position).getBackDropPath()).toString();
-        PicassoUtils.getImageFromUrl(mContext, urlBackDrop, holder.imageMovie);
+
+        urlBackDrop = NetworkUtils.buildImageUrl(mMovieList.get(position).getBackDropPath()).toString();
+        PicassoUtils.getImageFromUrl(context, urlBackDrop, holder.imageMovie);
         //holder.imageMovie.setImageResource(movieList.get(position).getBackDropPath());
 
     }
 
     @Override
     public int getItemCount() {
-        return movieList.size();
+       if (null == mMovieList) return 0;
+       return mMovieList.size();
     }
+
 
     public class PopularMoviesViewHolder extends RecyclerView.ViewHolder {
 
@@ -63,6 +67,11 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
             super(itemView);
             imageMovie = itemView.findViewById(R.id.image_movie);
         }
+    }
+
+    public void setMovieList (List<Movie> movieList) {
+        mMovieList = movieList;
+        notifyDataSetChanged();
     }
 
 }
