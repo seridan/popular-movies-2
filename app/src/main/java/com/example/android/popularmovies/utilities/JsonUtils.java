@@ -19,7 +19,7 @@ public class JsonUtils {
 
     private static final String ID = "id";
     private static final String ORIGINAL_TITLE = "original_title";
-    private static final String BACKDROP_PATH = "backdrop_path";
+    private static final String POSTER_PATH = "poster_path";
     private static final String OVERVIEW = "overview";
     private static final String VOTE_AVERAGE = "vote_average";
     private static final String RELEASE_DATE = "release_date";
@@ -40,7 +40,7 @@ public class JsonUtils {
                 JSONObject movieObject = resultsArray.getJSONObject(i);
                 parseMovie.setId(movieObject.optInt(ID));
                 parseMovie.setOriginalTitle(movieObject.optString(ORIGINAL_TITLE));
-                parseMovie.setBackDropPath(movieObject.optString(BACKDROP_PATH));
+                parseMovie.setPosterPath(movieObject.optString(POSTER_PATH));
                 parseMovie.setOverview(movieObject.optString(OVERVIEW));
                 parseMovie.setVote_average(movieObject.optDouble(VOTE_AVERAGE));
                 parseMovie.setReleaseDate(movieObject.optString(RELEASE_DATE));
@@ -60,7 +60,7 @@ public class JsonUtils {
 
             for (int i = 0; i < resultsArray.length(); i++) {
                 JSONObject posterPath = resultsArray.getJSONObject(i);
-                stringList.add((String) posterPath.get(BACKDROP_PATH));
+                stringList.add((String) posterPath.get(POSTER_PATH));
             }
         }
         return stringList;

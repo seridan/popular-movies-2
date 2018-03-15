@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">PopularMovies</string>
+    <string name="app_name">Popular Movies</string>
+    <string name="error_connection_message">Unable to connect with the server. Check your internet
+        connection and try again.</string>
+    <string name="error_connection_tittle">Connection error</string>
+    <string name="retry_button">Retry</string>
 </resources>

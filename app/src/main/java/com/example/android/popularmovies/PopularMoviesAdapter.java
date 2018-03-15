@@ -46,7 +46,7 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
     public void onBindViewHolder(PopularMoviesViewHolder holder, int position) {
         String urlBackDrop;
 
-        urlBackDrop = NetworkUtils.buildImageUrl(mMovieList.get(position).getBackDropPath()).toString();
+        urlBackDrop = NetworkUtils.buildImageUrl(mMovieList.get(position).getPosterPath()).toString();
         PicassoUtils.getImageFromUrl(context, urlBackDrop, holder.imageMovie);
         //holder.imageMovie.setImageResource(movieList.get(position).getBackDropPath());
 

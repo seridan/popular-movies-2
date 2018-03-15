@@ -1,11 +1,16 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
@@ -27,10 +32,16 @@ private Context mContext;
 
 private List<Movie> movieList;
 
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
 
         mRecyclerView = findViewById(R.id.recyclerview_images_movies);
         mRecyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
@@ -38,14 +49,38 @@ private List<Movie> movieList;
         mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList);
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
 
-        loadMoviesData();
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
+            loadMoviesData();
+        }else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.error_connection_message)
+                    .setTitle(R.string.error_connection_tittle);
+            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    recreate();
+                }
+            });
+
+            builder.show();
+        }
+
+
+
 
     }
 
     private void loadMoviesData() {
-        String sortBy = "popularity.desc";
-        URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
-        new FetchMoviesTask().execute(tmdbQueryUrl);
+
+
+            String sortBy = "popularity.desc";
+            URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
+            new FetchMoviesTask().execute(tmdbQueryUrl);
+
 
     }
 
@@ -74,7 +109,10 @@ private List<Movie> movieList;
         @Override
         protected void onPostExecute(List<Movie> movieList) {
             mPopularMoviesAdapter.setMovieList(movieList);
+
         }
     }
+
+
 
 }

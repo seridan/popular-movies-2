@@ -11,19 +11,19 @@ public class Movie {
     private int id;
     private String originalTitle;
     private String overview;
-    private String backDropPath;
+    private String posterPath;
     private String releaseDate;
     private double vote_average;
 
     public Movie() {
     }
 
-    public Movie(int id, String originalTitle, String overview, String backDropPath, String releaseDate,
+    public Movie(int id, String originalTitle, String overview, String posterPath, String releaseDate,
     double vote_average){
         this.id = id;
         this.originalTitle = originalTitle;
         this.overview = overview;
-        this.backDropPath = backDropPath;
+        this.posterPath = posterPath;
         this.releaseDate = releaseDate;
         this.vote_average = vote_average;
     }
@@ -52,12 +52,12 @@ public class Movie {
         this.overview = overview;
     }
 
-    public String getBackDropPath() {
-        return backDropPath;
+    public String getPosterPath() {
+        return posterPath;
     }
 
-    public void setBackDropPath(String backDropPath) {
-        this.backDropPath = backDropPath;
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
     }
 
     public String getReleaseDate() {
