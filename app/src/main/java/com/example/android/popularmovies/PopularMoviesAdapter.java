@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
@@ -49,6 +50,7 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
         urlBackDrop = NetworkUtils.buildImageUrl(mMovieList.get(position).getPosterPath()).toString();
         PicassoUtils.getImageFromUrl(context, urlBackDrop, holder.imageMovie);
         //holder.imageMovie.setImageResource(movieList.get(position).getBackDropPath());
+        holder.movieTittle.setText(mMovieList.get(position).getOriginalTitle());
 
     }
 
@@ -62,10 +64,12 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
     public class PopularMoviesViewHolder extends RecyclerView.ViewHolder {
 
         ImageView imageMovie;
+        TextView movieTittle;
 
         public PopularMoviesViewHolder(View itemView) {
             super(itemView);
             imageMovie = itemView.findViewById(R.id.image_movie);
+            movieTittle = itemView.findViewById(R.id.movie_tittle_tv);
         }
     }
 
