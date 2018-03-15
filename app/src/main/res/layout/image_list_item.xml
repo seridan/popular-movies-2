@@ -13,9 +13,15 @@
         android:adjustViewBounds="true"
         app:layout_constraintDimensionRatio="W,3:2"
         android:layout_margin="4dp"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/textview_movie_list_element"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/image_movie"
+        android:textAlignment="center"
+        android:text="Movie Title"/>
 </android.support.constraint.ConstraintLayout>

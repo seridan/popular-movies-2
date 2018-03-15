@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.model.Movie;
@@ -28,12 +30,9 @@ private RecyclerView mRecyclerView;
 
 private PopularMoviesAdapter mPopularMoviesAdapter;
 
-private Context mContext;
-
 private List<Movie> movieList;
 
-
-
+private ProgressBar mLoadingIndicator;
 
 
     @Override
@@ -41,50 +40,32 @@ private List<Movie> movieList;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         mRecyclerView = findViewById(R.id.recyclerview_images_movies);
         mRecyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
         mRecyclerView.setHasFixedSize(true);
         mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList);
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        ConnectivityManager cm =
-                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            loadMoviesData();
-        }else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.error_connection_message)
-                    .setTitle(R.string.error_connection_tittle);
-            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    recreate();
-                }
-            });
-
-            builder.show();
-        }
-
-
-
+        checkConnectionAndExecute();
 
     }
 
     private void loadMoviesData() {
 
-
             String sortBy = "popularity.desc";
             URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
             new FetchMoviesTask().execute(tmdbQueryUrl);
 
-
     }
 
     public class FetchMoviesTask extends AsyncTask<URL, Void, List<Movie>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
 
         @Override
         protected List<Movie> doInBackground(URL... urls) {
@@ -108,11 +89,32 @@ private List<Movie> movieList;
 
         @Override
         protected void onPostExecute(List<Movie> movieList) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
             mPopularMoviesAdapter.setMovieList(movieList);
 
         }
     }
 
+    private void checkConnectionAndExecute(){
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
+            loadMoviesData();
+        }else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.error_connection_message)
+                    .setTitle(R.string.error_connection_tittle);
+            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    recreate();
+                }
+            });
+
+            builder.show();
+        }
+    }
 
 }
