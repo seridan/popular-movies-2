@@ -10,6 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -34,6 +36,8 @@ private List<Movie> movieList;
 
 private ProgressBar mLoadingIndicator;
 
+private static String sortBy;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +50,15 @@ private ProgressBar mLoadingIndicator;
         mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList);
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+        sortBy = "popularity.desc";
 
         checkConnectionAndExecute();
 
     }
 
-    private void loadMoviesData() {
+    private void loadMoviesData(String sortBy) {
 
-            String sortBy = "popularity.desc";
+
             URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
             new FetchMoviesTask().execute(tmdbQueryUrl);
 
@@ -101,7 +106,7 @@ private ProgressBar mLoadingIndicator;
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            loadMoviesData();
+            loadMoviesData(sortBy);
         }else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.error_connection_message)
@@ -117,4 +122,24 @@ private ProgressBar mLoadingIndicator;
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int menuOptionsThatWasSelected = item.getItemId();
+            if (menuOptionsThatWasSelected == R.id.action_sort_popularity){
+                sortBy = "popularity.desc";
+                mPopularMoviesAdapter.setMovieList(null);
+                loadMoviesData(sortBy);
+        }else if (menuOptionsThatWasSelected == R.id.action_sort_rated) {
+                sortBy = "vote_average.desc";
+                mPopularMoviesAdapter.setMovieList(null);
+                loadMoviesData(sortBy);
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

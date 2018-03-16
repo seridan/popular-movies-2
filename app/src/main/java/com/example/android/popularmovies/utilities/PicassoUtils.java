@@ -14,11 +14,11 @@ public class PicassoUtils {
 
     public static void getImageFromUrl (Context context, String url, ImageView imageView){
 
-        if (url != null && url.length() > 0){
+        if (url != null && url.length() > 0 && !url.contains("null")){
             Picasso.with(context).load(url).into(imageView);
 
         }else {
-            Picasso.with(context).load(R.mipmap.ic_launcher).into(imageView);
+            Picasso.with(context).load(R.drawable.no_image_avalaible).into(imageView);
         }
     }
 }
