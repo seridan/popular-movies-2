@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -26,9 +27,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PopularMoviesAdapter.ListItemClickListener {
 
-private RecyclerView mRecyclerView;
+    private static final String MOVIE_OBJECT = "movieObject";
+    private RecyclerView mRecyclerView;
 
 private PopularMoviesAdapter mPopularMoviesAdapter;
 
@@ -37,6 +39,8 @@ private List<Movie> movieList;
 private ProgressBar mLoadingIndicator;
 
 private static String sortBy;
+
+    Toast toast;
 
 
     @Override
@@ -47,7 +51,7 @@ private static String sortBy;
         mRecyclerView = findViewById(R.id.recyclerview_images_movies);
         mRecyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
         mRecyclerView.setHasFixedSize(true);
-        mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList);
+        mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList, this);
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
         sortBy = "popularity.desc";
@@ -62,6 +66,21 @@ private static String sortBy;
             URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
             new FetchMoviesTask().execute(tmdbQueryUrl);
 
+    }
+
+    @Override
+    public void onListItemClick(Movie movie) {
+        Context context = this;
+        Class destinationClass = DetailActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra(MOVIE_OBJECT, movie);
+        startActivity(intentToStartDetailActivity);
+       /* if(toast != null){
+            toast.cancel();
+        }
+        String toastMessage = "Tittle: " + movie.getOriginalTitle();
+        toast = Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT);
+        toast.show();*/
     }
 
     public class FetchMoviesTask extends AsyncTask<URL, Void, List<Movie>> {
