@@ -25,8 +25,9 @@ public class JsonUtils {
     private static final String RELEASE_DATE = "release_date";
     private static final String RESULTS = "results";
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w85";
+    private static final String BACKDROPS = "backdrops";
+    private static final String FILE_PATH = "file_path";
     private static final String TAG = JsonUtils.class.toString();
-
 
 
     public static List<Movie> parseMovieList (String json) throws JSONException {
@@ -49,6 +50,20 @@ public class JsonUtils {
             }
         }
         return parseMovieList;
+    }
+
+    public static String getDetailImage (String json) throws JSONException {
+        JSONObject parentObject = new JSONObject(json);
+        JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
+
+        if (backDropArray != null) {
+
+                JSONObject backDroPObject = backDropArray.getJSONObject(0);
+                if (backDroPObject != null){
+                    return backDroPObject.optString(FILE_PATH);
+                }
+        }
+        return null;
     }
 
 

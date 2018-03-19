@@ -6,4 +6,7 @@
     <string name="retry_button">Retry</string>
     <string name="sort_by_popularity">Sort by popularity</string>
     <string name="sort_by_top_Rated">Sort by top rated</string>
+
+    <!-- Content descriptions-->
+    <string name="movie_picture_content_description">Movie picture</string>
 </resources>

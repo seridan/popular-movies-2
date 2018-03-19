@@ -62,10 +62,8 @@ private static String sortBy;
 
     private void loadMoviesData(String sortBy) {
 
-
             URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
             new FetchMoviesTask().execute(tmdbQueryUrl);
-
     }
 
     @Override

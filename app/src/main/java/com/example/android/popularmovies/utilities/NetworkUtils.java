@@ -23,6 +23,7 @@ public class NetworkUtils {
     final static String MOVIE_DISCOVER_BASE_URL =
             "https://api.themoviedb.org/3/discover/movie";
 
+
     final static String API_KEY_PARAM = "api_key";
     final static String apiKey = "053875c05af844b2914df74028efb926";
 
@@ -31,6 +32,12 @@ public class NetworkUtils {
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String IMAGE_SIZE_PATH = "w342/";
+
+    final static String MOVIE_BACKDROP_BASE_URL =
+            "https://api.themoviedb.org/3/movie";
+    private static final String IMAGES_PATH = "images";
+    private static final String INCLUDE_IMAGE_LANGUAGE = "include_image_language";
+    private static final String includeImageLanguage = "include_image_language=en,null";
 
 
     public static URL buildSortedUrl(String sortBy) {
@@ -49,6 +56,25 @@ public class NetworkUtils {
         return sortedUrl;
     }
 
+    public static URL buildBackdropImageUrl (int movieId){
+        Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
+
+                .appendPath(Integer.toString(movieId))
+                .appendEncodedPath(IMAGES_PATH)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .appendQueryParameter(INCLUDE_IMAGE_LANGUAGE, includeImageLanguage)
+                .build();
+
+        URL imageUrl = null;
+        try {
+            imageUrl = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.v(TAG, "Built URI " + imageUrl);
+        return imageUrl;
+    }
+
     public static URL buildImageUrl (String backDropPath){
         Uri builtUri = Uri.parse(IMAGE_BASE_URL).buildUpon()
                 .appendEncodedPath(IMAGE_SIZE_PATH)
@@ -64,6 +90,8 @@ public class NetworkUtils {
         Log.v(TAG, "Built URI " + imageUrl);
         return imageUrl;
     }
+
+
 
 
 
