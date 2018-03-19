@@ -31,7 +31,7 @@ public class NetworkUtils {
     //final static String sortBy = "popularity.desc";
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
-    private static final String IMAGE_SIZE_PATH = "w342/";
+    private static final String IMAGE_SIZE_PATH = "w342";
 
     final static String MOVIE_BACKDROP_BASE_URL =
             "https://api.themoviedb.org/3/movie";
@@ -77,7 +77,7 @@ public class NetworkUtils {
 
     public static URL buildImageUrl (String backDropPath){
         Uri builtUri = Uri.parse(IMAGE_BASE_URL).buildUpon()
-                .appendEncodedPath(IMAGE_SIZE_PATH)
+                .appendPath(IMAGE_SIZE_PATH)
                 .appendEncodedPath(backDropPath)
                 .build();
 
