@@ -71,7 +71,7 @@ public class NetworkUtils {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Built URI " + imageUrl);
+        Log.v(TAG, "BuiltBackdrop URI " + imageUrl);
         return imageUrl;
     }
 

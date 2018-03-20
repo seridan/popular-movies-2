@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,8 +27,10 @@ public class DetailActivity extends AppCompatActivity {
     private TextView titleTv;
     private Movie mMovie;
     private URL posterUrl;
+    private int mMovieId;
     Context context;
     String backdropPath;
+    final static String TAG = DetailActivity.class.getSimpleName();
 
 
     @Override
@@ -39,6 +42,7 @@ public class DetailActivity extends AppCompatActivity {
         titleLabel = findViewById(R.id.title_label);
         titleTv = findViewById(R.id.title_tv);
         context = this;
+        backdropPath = null;
 
 
         Intent intentThatStartedThisActivity = getIntent();
@@ -47,22 +51,30 @@ public class DetailActivity extends AppCompatActivity {
             mMovie = intentThatStartedThisActivity.getParcelableExtra("movieObject");
             if (mMovie != null) {
                 int mMovieId = mMovie.getId();
-                posterUrl = NetworkUtils.buildBackdropImageUrl(Integer.parseInt(Integer.toString(mMovieId)));
+                loadPosterImage(mMovieId);
+
+            }
+
+
+            /*if (mMovie != null) {
+                int mMovieId = mMovie.getId();
+                posterUrl = NetworkUtils.buildBackdropImageUrl(mMovieId);
                 new FetchMoviesTask().execute(posterUrl);
+                Log.v(TAG, "poster Url " + posterUrl);
                 PicassoUtils.getImageFromUrl(context, backdropPath, posterIv);
+                Log.v(TAG, "backdropPath " + backdropPath);
                 titleTv.setText(mMovie.getOriginalTitle());
+            }*/
                 /*posterUrl = mMovie.getPosterPath();
                 PicassoUtils.getImageFromUrl(context, posterUrl, posterIv);
                 titleTv.setText(mMovie.getOriginalTitle());*/
 
-            }
+
         }
     }
-    private void loadPosterImage (int id){
 
-    }
 
-    public class FetchMoviesTask extends AsyncTask<URL, Void, String>{
+    public class FetchPosterMovieTask extends AsyncTask<URL, Void, String>{
 
         @Override
         protected String doInBackground(URL... urls) {
@@ -79,6 +91,21 @@ public class DetailActivity extends AppCompatActivity {
             }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            PicassoUtils.getImageFromUrl(context, backdropPath, posterIv);
+            Log.v(TAG, "backdropPath " + backdropPath);
+
+        }
+    }
+
+    private void loadPosterImage (int id){
+        posterUrl = NetworkUtils.buildBackdropImageUrl(id);
+        new FetchPosterMovieTask().execute(posterUrl);
+
+
     }
 
 }

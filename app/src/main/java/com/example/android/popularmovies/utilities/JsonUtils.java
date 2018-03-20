@@ -53,15 +53,18 @@ public class JsonUtils {
     }
 
     public static String getDetailImage (String json) throws JSONException {
+        String filePath;
         JSONObject parentObject = new JSONObject(json);
         JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
 
         if (backDropArray != null) {
 
-                JSONObject backDroPObject = backDropArray.getJSONObject(0);
-                if (backDroPObject != null){
-                    return backDroPObject.optString(FILE_PATH);
-                }
+            JSONObject backDroPObject = backDropArray.getJSONObject(0);
+            if (backDroPObject != null){
+                filePath = backDroPObject.getString(FILE_PATH);
+                Log.v(TAG, "parse filepath " + filePath);
+                return filePath;
+            }
         }
         return null;
     }
@@ -82,5 +85,4 @@ public class JsonUtils {
     }
 
 
-    }
-
+}
