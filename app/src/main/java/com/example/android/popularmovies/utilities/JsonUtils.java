@@ -29,7 +29,13 @@ public class JsonUtils {
     private static final String FILE_PATH = "file_path";
     private static final String TAG = JsonUtils.class.toString();
 
-
+    /**
+     * Once we have the String with the JSON of the Movie Discover witch contains a list of the movies
+     * and their data we have to parse with this method and then return an ArrayList of the movies.
+     * @param json String that contains the JSON.
+     * @return ArrayList of the movies.
+     * @throws JSONException
+     */
     public static List<Movie> parseMovieList (String json) throws JSONException {
         JSONObject parentObject = new JSONObject(json);
         JSONArray resultsArray = parentObject.getJSONArray(RESULTS);
@@ -52,12 +58,18 @@ public class JsonUtils {
         return parseMovieList;
     }
 
+    /**
+     * This method parse the JSON of the image that we'll use in the detail activity.
+     * @param json String that contains the JSON from the URL.
+     * @return String with the path to the image taking from the JSON.
+     * @throws JSONException
+     */
     public static String getDetailImage (String json) throws JSONException {
         String filePath;
         JSONObject parentObject = new JSONObject(json);
         JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
 
-        if (backDropArray != null) {
+        if (backDropArray != null && backDropArray.length() > 0) {
 
             JSONObject backDroPObject = backDropArray.getJSONObject(0);
             if (backDroPObject != null){

@@ -2,35 +2,36 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.PicassoUtils;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<String> {
 
     private ImageView posterIv;
     private TextView titleLabel;
     private TextView titleTv;
     private Movie mMovie;
-    private URL posterUrl;
-    private int mMovieId;
+
     Context context;
-    String backdropPath;
+
     final static String TAG = DetailActivity.class.getSimpleName();
+    final static int DETAIL_ACTIVITY_LOADER = 22;
+    final static String SEARCH_QUERY_URL_EXTRA = "searchQueryUrlExtra";
 
 
     @Override
@@ -42,70 +43,88 @@ public class DetailActivity extends AppCompatActivity {
         titleLabel = findViewById(R.id.title_label);
         titleTv = findViewById(R.id.title_tv);
         context = this;
-        backdropPath = null;
-
 
         Intent intentThatStartedThisActivity = getIntent();
-
         if (intentThatStartedThisActivity != null) {
             mMovie = intentThatStartedThisActivity.getParcelableExtra("movieObject");
             if (mMovie != null) {
                 int mMovieId = mMovie.getId();
                 loadPosterImage(mMovieId);
-
             }
-
-
-            /*if (mMovie != null) {
-                int mMovieId = mMovie.getId();
-                posterUrl = NetworkUtils.buildBackdropImageUrl(mMovieId);
-                new FetchMoviesTask().execute(posterUrl);
-                Log.v(TAG, "poster Url " + posterUrl);
-                PicassoUtils.getImageFromUrl(context, backdropPath, posterIv);
-                Log.v(TAG, "backdropPath " + backdropPath);
-                titleTv.setText(mMovie.getOriginalTitle());
-            }*/
-                /*posterUrl = mMovie.getPosterPath();
-                PicassoUtils.getImageFromUrl(context, posterUrl, posterIv);
-                titleTv.setText(mMovie.getOriginalTitle());*/
-
-
         }
     }
 
+    @Override
+    public Loader<String> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<String>(this) {
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                if (args == null) {
+                    return;
+                }
+                forceLoad();
+                //mLoadingIndicator iria aqui
+            }
 
-    public class FetchPosterMovieTask extends AsyncTask<URL, Void, String>{
+            @Override
+            public String loadInBackground() {
+                String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
+                if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
+                    return null;
+                }
+                try {
+                    URL detailUrl = new URL(searchQueryUrlString);
+                    return NetworkUtils.getResponseFromHttpUrl(detailUrl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        };
+    }
 
-        @Override
-        protected String doInBackground(URL... urls) {
-            URL searchUrl = urls[0];
-            String tmdbQueryResult;
+    @Override
+    public void onLoadFinished(Loader<String> loader, String data) {
+        //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
+        if (data == null) {
+            data = mMovie.getPosterPath();
+            PicassoUtils.getImageFromUrl(context, data, posterIv);
+            Log.v(TAG, "data if null " + data);
+        //If not null, get the data to pass the JsonUtils and obtain the backdrop image
+        }else {
             try {
-                tmdbQueryResult = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-                backdropPath = JsonUtils.getDetailImage(tmdbQueryResult);
-                return backdropPath;
-            } catch (IOException e) {
-                e.printStackTrace();
+                String backDropPath = JsonUtils.getDetailImage(data);
+                PicassoUtils.getImageFromUrl(context, backDropPath, posterIv);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            PicassoUtils.getImageFromUrl(context, backdropPath, posterIv);
-            Log.v(TAG, "backdropPath " + backdropPath);
-
         }
     }
 
+    @Override
+    public void onLoaderReset(Loader<String> loader) {
+
+    }
+
+    /**
+     * This method load the image that will shown in the detailActivity screen through an AsyncTask
+     * loader. Obtains the url to get the image JSON of the movie selected.
+     * @param id int of the id of selected movie.
+     */
     private void loadPosterImage (int id){
-        posterUrl = NetworkUtils.buildBackdropImageUrl(id);
-        new FetchPosterMovieTask().execute(posterUrl);
+        // Obtains the url to get the image JSON of the movie selected.
+        URL posterUrl = NetworkUtils.buildBackdropImageUrl(id);
+        Bundle queryBundle = new Bundle();
+        queryBundle.putString(SEARCH_QUERY_URL_EXTRA, posterUrl.toString());
+        //Create the LoaderManager an check if is initialized or not.
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Object> moviesSearchLoader = loaderManager.getLoader(DETAIL_ACTIVITY_LOADER);
 
-
+        if (moviesSearchLoader == null){
+            loaderManager.initLoader(DETAIL_ACTIVITY_LOADER, queryBundle,this);
+        }else{
+            loaderManager.restartLoader(DETAIL_ACTIVITY_LOADER, queryBundle, this);
+        }
     }
-
 }

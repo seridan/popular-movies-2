@@ -1,46 +1,50 @@
 package com.example.android.popularmovies;
 
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements PopularMoviesAdapter.ListItemClickListener {
+public class MainActivity extends AppCompatActivity
+        implements PopularMoviesAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<String> {
 
     private static final String MOVIE_OBJECT = "movieObject";
     private RecyclerView mRecyclerView;
 
-private PopularMoviesAdapter mPopularMoviesAdapter;
+    private PopularMoviesAdapter mPopularMoviesAdapter;
 
-private List<Movie> movieList;
+    private List<Movie> movieList;
 
-private ProgressBar mLoadingIndicator;
+    private ProgressBar mLoadingIndicator;
 
-private static String sortBy;
+    private static String sortBy;
 
-    Toast toast;
+    private static final int POPULAR_MOVIES_LOADER = 22;
+
+    private static final String SEARCH_QUERY_URL_EXTRA = "tmdbQueryExtra";
+    private String queryUrl;
+
 
 
     @Override
@@ -54,16 +58,29 @@ private static String sortBy;
         mPopularMoviesAdapter = new PopularMoviesAdapter(MainActivity.this, movieList, this);
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
-        sortBy = "popularity.desc";
 
         checkConnectionAndExecute();
-
     }
 
+    /**
+     * This method gets the list of movies to set in the recycler view through an AsyncTask
+     * loader.
+     * @param sortBy
+     */
     private void loadMoviesData(String sortBy) {
 
-            URL tmdbQueryUrl = NetworkUtils.buildSortedUrl(sortBy);
-            new FetchMoviesTask().execute(tmdbQueryUrl);
+            URL tmdbUrl = NetworkUtils.buildSortedUrl(sortBy);
+
+            Bundle queryBundle = new Bundle();
+            queryBundle.putString(SEARCH_QUERY_URL_EXTRA, tmdbUrl.toString());
+
+            LoaderManager loaderManager = getSupportLoaderManager();
+            Loader<Object> moviesSearchLoader = loaderManager.getLoader(POPULAR_MOVIES_LOADER);
+            if (moviesSearchLoader == null){
+                loaderManager.initLoader(POPULAR_MOVIES_LOADER, queryBundle,this);
+            }else{
+                loaderManager.restartLoader(POPULAR_MOVIES_LOADER, queryBundle, this);
+            }
     }
 
     @Override
@@ -73,50 +90,60 @@ private static String sortBy;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
         intentToStartDetailActivity.putExtra(MOVIE_OBJECT, movie);
         startActivity(intentToStartDetailActivity);
-       /* if(toast != null){
-            toast.cancel();
-        }
-        String toastMessage = "Tittle: " + movie.getOriginalTitle();
-        toast = Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT);
-        toast.show();*/
     }
 
-    public class FetchMoviesTask extends AsyncTask<URL, Void, List<Movie>> {
+    @Override
+    public Loader<String> onCreateLoader(int id, final Bundle bundle) {
+        return new AsyncTaskLoader<String>(this) {
+            @Override
+            protected void onStartLoading() {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<Movie> doInBackground(URL... urls) {
-
-            URL searchUrl = urls[0];
-            String tmdbQueryResult;
-            try {
-                tmdbQueryResult = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-
-                movieList = JsonUtils.parseMovieList(tmdbQueryResult);
-
-                return movieList;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                if (bundle == null) {
+                    return;
+                }
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                forceLoad();
             }
 
-            return null;
-        }
+            @Override
+            public String loadInBackground() {
+                String searchQueryStringUrl = bundle.getString(SEARCH_QUERY_URL_EXTRA);
+                if (searchQueryStringUrl == null || TextUtils.isEmpty(searchQueryStringUrl)) {
+                    return null;
+                }
+                try {
+                    URL tmdbUrl = new URL(searchQueryStringUrl);
+                    return NetworkUtils.getResponseFromHttpUrl(tmdbUrl);
 
-        @Override
-        protected void onPostExecute(List<Movie> movieList) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            mPopularMoviesAdapter.setMovieList(movieList);
-
-        }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        };
     }
 
+    @Override
+    public void onLoadFinished(android.support.v4.content.Loader<String> loader, String data) {
+        queryUrl = data;
+        try {
+            movieList = JsonUtils.parseMovieList(queryUrl);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mPopularMoviesAdapter.setMovieList(movieList);
+
+    }
+
+    @Override
+    public void onLoaderReset(android.support.v4.content.Loader<String> loader) {
+
+    }
+
+    /**
+     * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
+     */
     private void checkConnectionAndExecute(){
         ConnectivityManager cm =
                 (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -159,4 +186,11 @@ private static String sortBy;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(SEARCH_QUERY_URL_EXTRA, queryUrl);
+    }
+
 }
