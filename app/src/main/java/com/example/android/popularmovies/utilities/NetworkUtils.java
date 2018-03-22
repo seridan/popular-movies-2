@@ -25,7 +25,7 @@ public class NetworkUtils {
 
 
     final static String API_KEY_PARAM = "api_key";
-    final static String apiKey = "053875c05af844b2914df74028efb926";
+    final static String apiKey = "set here your api key";
 
     final static String PARAM_SORT = "sort_by";
     //final static String sortBy = "popularity.desc";
