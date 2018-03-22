@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="pref_sort_by_option_labels">
+        <item>@string/sort_by_top_rated_label</item>
+        <item>@string/sort_by_vote_average_label</item>
+    </array>
+
+    <array name="pref_sort_by_option_values">
+        <item>@string/pref_sort_by_top_rated_value</item>
+        <item>@string/pref_sort_by_vote_average_value</item>
+    </array>
+</resources>

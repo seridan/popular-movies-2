@@ -1,9 +1,11 @@
 package com.example.android.popularmovies;
 
+import android.content.SharedPreferences;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,6 +20,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+
+import com.example.android.popularmovies.data.PopularMoviesPreferences;
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
@@ -27,7 +31,9 @@ import java.net.URL;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements PopularMoviesAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<String> {
+        implements PopularMoviesAdapter.ListItemClickListener,
+        LoaderManager.LoaderCallbacks<String>,
+        SharedPreferences.OnSharedPreferenceChangeListener{
 
     private static final String MOVIE_OBJECT = "movieObject";
     private RecyclerView mRecyclerView;
@@ -40,11 +46,12 @@ public class MainActivity extends AppCompatActivity
 
     private static String sortBy;
 
-    private static final int POPULAR_MOVIES_LOADER = 22;
+    private static final int POPULAR_MOVIES_LOADER = 0;
 
     private static final String SEARCH_QUERY_URL_EXTRA = "tmdbQueryExtra";
     private String queryUrl;
 
+    private static boolean PREFERENCES_HAVE_BEEN_UPDATED = false;
 
 
     @Override
@@ -59,7 +66,18 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
+        int loaderId = POPULAR_MOVIES_LOADER;
+
+        LoaderManager.LoaderCallbacks<String> callback = MainActivity.this;
+
+        Bundle bundleForLoader = null;
+
+        //getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+
         checkConnectionAndExecute();
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -95,30 +113,41 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<String> onCreateLoader(int id, final Bundle bundle) {
         return new AsyncTaskLoader<String>(this) {
+
+            String mPopularMoviesJson;
+
             @Override
             protected void onStartLoading() {
 
-                if (bundle == null) {
-                    return;
+                if (mPopularMoviesJson != null) {
+                    deliverResult(mPopularMoviesJson);
+                }else {
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
+                    forceLoad();
                 }
-                mLoadingIndicator.setVisibility(View.VISIBLE);
-                forceLoad();
             }
 
             @Override
             public String loadInBackground() {
-                String searchQueryStringUrl = bundle.getString(SEARCH_QUERY_URL_EXTRA);
-                if (searchQueryStringUrl == null || TextUtils.isEmpty(searchQueryStringUrl)) {
-                    return null;
-                }
+                String sortBy = PopularMoviesPreferences
+                        .getPreferdSorted(MainActivity.this);
+
+                URL tmdbRequestUrl = NetworkUtils.buildSortedUrl(sortBy);
+
                 try {
-                    URL tmdbUrl = new URL(searchQueryStringUrl);
-                    return NetworkUtils.getResponseFromHttpUrl(tmdbUrl);
+                    String jsonTmdbResponse = NetworkUtils.getResponseFromHttpUrl(tmdbRequestUrl);
+                    return jsonTmdbResponse;
 
                 } catch (IOException e) {
                     e.printStackTrace();
                     return null;
                 }
+            }
+
+            @Override
+            public void deliverResult(String data) {
+                mPopularMoviesJson = data;
+                super.deliverResult(data);
             }
         };
     }
@@ -126,12 +155,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<String> loader, String data) {
         queryUrl = data;
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
         try {
             movieList = JsonUtils.parseMovieList(queryUrl);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
+
         mPopularMoviesAdapter.setMovieList(movieList);
 
     }
@@ -150,7 +180,7 @@ public class MainActivity extends AppCompatActivity
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            loadMoviesData(sortBy);
+            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
         }else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.error_connection_message)
@@ -167,6 +197,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (PREFERENCES_HAVE_BEEN_UPDATED){
+            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
+            PREFERENCES_HAVE_BEEN_UPDATED = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -175,14 +222,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuOptionsThatWasSelected = item.getItemId();
-            if (menuOptionsThatWasSelected == R.id.action_sort_popularity){
-                sortBy = "popularity.desc";
+            if (menuOptionsThatWasSelected == R.id.action_settings){
+                Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+                startActivity(startSettingsActivity);
+                return true;
+               /* sortBy = "popularity.desc";
                 mPopularMoviesAdapter.setMovieList(null);
                 loadMoviesData(sortBy);
         }else if (menuOptionsThatWasSelected == R.id.action_sort_rated) {
                 sortBy = "vote_average.desc";
                 mPopularMoviesAdapter.setMovieList(null);
-                loadMoviesData(sortBy);
+                loadMoviesData(sortBy);*/
         }
         return super.onOptionsItemSelected(item);
     }
@@ -193,4 +243,16 @@ public class MainActivity extends AppCompatActivity
         outState.putString(SEARCH_QUERY_URL_EXTRA, queryUrl);
     }
 
+    private void defaultSetup(){
+
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
+
+
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        PREFERENCES_HAVE_BEEN_UPDATED = true;
+    }
 }

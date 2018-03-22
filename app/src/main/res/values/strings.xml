@@ -4,9 +4,23 @@
         connection and try again.</string>
     <string name="error_connection_tittle">Connection error</string>
     <string name="retry_button">Retry</string>
-    <string name="sort_by_popularity">Sort by popularity</string>
-    <string name="sort_by_top_Rated">Sort by top rated</string>
 
-    <!-- Content descriptions-->
+    <!-- Menu -->
+    <string name="action_settings">Settings</string>
+    <!-- Label for sort by preference -->
+    <string name="sort_by_label">Sort by</string>
+    <!-- Label for sort by top rated preference -->
+    <string name="sort_by_top_rated_label">Top rated</string>
+    <!-- Label for sort by vote average preference -->
+    <string name="sort_by_vote_average_label">Vote average</string>
+
+    <!-- Key name for sort by SharedPreference -->
+    <string name="pref_sort_by_key" translatable="false">sortBy</string>
+    <!-- Value in SharedPreference for sort by top rated -->
+    <string name="pref_sort_by_top_rated_value" translatable="false">popularity.desc</string>
+    <!-- Value in SharedPreference for sort by vote average -->
+    <string name="pref_sort_by_vote_average_value" translatable="false">vote_average.desc</string>
+
+    <!-- Content descriptions -->
     <string name="movie_picture_content_description">Movie picture</string>
 </resources>
