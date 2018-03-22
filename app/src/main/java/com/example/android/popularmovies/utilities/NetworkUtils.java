@@ -18,22 +18,22 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    final static String TAG = NetworkUtils.class.getSimpleName();
+    private final static String TAG = NetworkUtils.class.getSimpleName();
 
-    final static String MOVIE_DISCOVER_BASE_URL =
+    private final static String MOVIE_DISCOVER_BASE_URL =
             "https://api.themoviedb.org/3/discover/movie";
 
 
-    final static String API_KEY_PARAM = "api_key";
-    final static String apiKey = "set here your api key";
+    private final static String API_KEY_PARAM = "api_key";
+    private final static String apiKey = "set here the api key";
 
-    final static String PARAM_SORT = "sort_by";
+    private final static String PARAM_SORT = "sort_by";
     //final static String sortBy = "popularity.desc";
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String IMAGE_SIZE_PATH = "w342";
 
-    final static String MOVIE_BACKDROP_BASE_URL =
+    private final static String MOVIE_BACKDROP_BASE_URL =
             "https://api.themoviedb.org/3/movie";
     private static final String IMAGES_PATH = "images";
     private static final String INCLUDE_IMAGE_LANGUAGE = "include_image_language";
