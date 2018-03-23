@@ -9,7 +9,9 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
@@ -27,6 +29,7 @@ public class DetailActivity extends AppCompatActivity
     private TextView mSynopsisTv;
     private TextView mVoteAverage;
     private TextView mReleaseDate;
+    private ProgressBar mLoadingIndicator;
     private Movie mMovie;
 
     Context context;
@@ -47,6 +50,7 @@ public class DetailActivity extends AppCompatActivity
         mSynopsisTv = findViewById(R.id.synopsis_tv);
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         context = this;
 
@@ -59,7 +63,7 @@ public class DetailActivity extends AppCompatActivity
             }
         }
 
-        setMovieDetails();
+        setMovieDetails(mMovie);
     }
 
     @Override
@@ -67,12 +71,14 @@ public class DetailActivity extends AppCompatActivity
         return new AsyncTaskLoader<String>(this) {
             @Override
             protected void onStartLoading() {
+                mLoadingIndicator.setVisibility(View.VISIBLE);
                 super.onStartLoading();
                 if (args == null) {
                     return;
                 }
+
+
                 forceLoad();
-                //mLoadingIndicator iria aqui
             }
 
             @Override
@@ -95,11 +101,11 @@ public class DetailActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<String> loader, String data) {
         //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
+
         if (data == null) {
             data = mMovie.getPosterPath();
             PicassoUtils.getImageFromUrl(context, data, mPosterIv);
-            Log.v(TAG, "data if null " + data);
-        //If not null, get the data to pass the JsonUtils and obtain the backdrop image
+            //If not null, get the data to pass the JsonUtils and obtain the backdrop image
         }else {
             try {
                 String backDropPath = JsonUtils.getDetailImage(data);
@@ -108,6 +114,7 @@ public class DetailActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -136,11 +143,26 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
-    private void setMovieDetails() {
-        mTitleLabel.setText(mMovie.getOriginalTitle());
-        mSynopsisTv.setText(mMovie.getOverview());
-        mVoteAverage.setText(String.valueOf(mMovie.getVote_average()));
-        mReleaseDate.setText(String.valueOf(mMovie.getReleaseDate()));
+    /**
+     * This method check if there is value to set in the TextxView. If not will set the error message.
+     *
+     * @param s        string which represent the text that is set.
+     * @param textView corresponding with the textView to set the data.
+     */
+    private void checkAndSetTex(String s, TextView textView) {
+        if (TextUtils.isEmpty(s)) {
+            textView.setText(R.string.detail_error_message);
+        } else {
+            textView.setText(s);
+        }
+    }
+
+    private void setMovieDetails(Movie movie) {
+
+        checkAndSetTex(movie.getOriginalTitle(),mTitleLabel);
+        checkAndSetTex(movie.getOverview(),mSynopsisTv);
+        checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
+        checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
 
     }
 }

@@ -53,10 +53,7 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
     @Override
     public void onBindViewHolder(PopularMoviesViewHolder holder, int position) {
 
-
-        String urlPosterPath = NetworkUtils.buildImageUrl(mMovieList.get(position).getPosterPath()).toString();
         PicassoUtils.getImageFromUrl(mContext, mMovieList.get(position).getPosterPath(), holder.imageMovie);
-        //holder.imageMovie.setImageResource(movieList.get(position).getBackDropPath());
         holder.movieTittle.setText(mMovieList.get(position).getOriginalTitle());
 
     }

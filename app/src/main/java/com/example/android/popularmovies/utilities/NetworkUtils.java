@@ -25,10 +25,10 @@ public class NetworkUtils {
 
 
     private final static String API_KEY_PARAM = "api_key";
-    private final static String apiKey = "enter here your api key";
+    private final static String apiKey = ""; //******* Set here the api key *************
 
     private final static String PARAM_SORT = "sort_by";
-    //final static String sortBy = "popularity.desc";
+
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String IMAGE_SIZE_PATH = "w342";
@@ -52,7 +52,7 @@ public class NetworkUtils {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Built URI " + sortedUrl);
+        Log.v(TAG, "Built sorted URI " + sortedUrl);
         return sortedUrl;
     }
 
@@ -87,12 +87,9 @@ public class NetworkUtils {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Built URI " + imageUrl);
+        Log.v(TAG, "Built image URI " + imageUrl);
         return imageUrl;
     }
-
-
-
 
 
 

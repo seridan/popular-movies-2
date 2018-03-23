@@ -134,14 +134,22 @@ public class MainActivity extends AppCompatActivity
      * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
      */
     private void checkConnectionAndExecute() {
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Object> moviesSearchLoader = loaderManager.getLoader(POPULAR_MOVIES_LOADER);
+
         ConnectivityManager cm =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
         if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER, null, this);
+            if (moviesSearchLoader == null){
+                getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER, null, this);
+            }else{
+                getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
+            }
+
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
             builder.setMessage(R.string.error_connection_message)
                     .setTitle(R.string.error_connection_tittle);
             builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
