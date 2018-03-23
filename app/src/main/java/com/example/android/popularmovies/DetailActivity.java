@@ -22,9 +22,11 @@ import java.net.URL;
 public class DetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<String> {
 
-    private ImageView posterIv;
-    private TextView titleLabel;
-    private TextView titleTv;
+    private ImageView mPosterIv;
+    private TextView mTitleLabel;
+    private TextView mSynopsisTv;
+    private TextView mVoteAverage;
+    private TextView mReleaseDate;
     private Movie mMovie;
 
     Context context;
@@ -34,14 +36,18 @@ public class DetailActivity extends AppCompatActivity
     final static String SEARCH_QUERY_URL_EXTRA = "searchQueryUrlExtra";
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        posterIv = findViewById(R.id.poster_iv);
-        titleLabel = findViewById(R.id.title_label);
-        titleTv = findViewById(R.id.title_tv);
+        mPosterIv = findViewById(R.id.poster_iv);
+        mTitleLabel = findViewById(R.id.title_movie);
+        mSynopsisTv = findViewById(R.id.synopsis_tv);
+        mVoteAverage = findViewById(R.id.vote_average_tv);
+        mReleaseDate = findViewById(R.id.release_date_tv);
+
         context = this;
 
         Intent intentThatStartedThisActivity = getIntent();
@@ -52,6 +58,8 @@ public class DetailActivity extends AppCompatActivity
                 loadPosterImage(mMovieId);
             }
         }
+
+        setMovieDetails();
     }
 
     @Override
@@ -89,13 +97,13 @@ public class DetailActivity extends AppCompatActivity
         //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
         if (data == null) {
             data = mMovie.getPosterPath();
-            PicassoUtils.getImageFromUrl(context, data, posterIv);
+            PicassoUtils.getImageFromUrl(context, data, mPosterIv);
             Log.v(TAG, "data if null " + data);
         //If not null, get the data to pass the JsonUtils and obtain the backdrop image
         }else {
             try {
                 String backDropPath = JsonUtils.getDetailImage(data);
-                PicassoUtils.getImageFromUrl(context, backDropPath, posterIv);
+                PicassoUtils.getImageFromUrl(context, backDropPath, mPosterIv);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -126,5 +134,13 @@ public class DetailActivity extends AppCompatActivity
         }else{
             loaderManager.restartLoader(DETAIL_ACTIVITY_LOADER, queryBundle, this);
         }
+    }
+
+    private void setMovieDetails() {
+        mTitleLabel.setText(mMovie.getOriginalTitle());
+        mSynopsisTv.setText(mMovie.getOverview());
+        mVoteAverage.setText(String.valueOf(mMovie.getVote_average()));
+        mReleaseDate.setText(String.valueOf(mMovie.getReleaseDate()));
+
     }
 }

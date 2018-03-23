@@ -5,7 +5,7 @@
     <string name="error_connection_tittle">Connection error</string>
     <string name="retry_button">Retry</string>
 
-    <!-- Menu -->
+
     <string name="action_settings">Settings</string>
     <!-- Label for sort by preference -->
     <string name="sort_by_label">Sort by</string>
@@ -23,4 +23,9 @@
 
     <!-- Content descriptions -->
     <string name="movie_picture_content_description">Movie picture</string>
+
+    <!-- activity_detail -->
+    <string name="synopsis_label">Synopsis:</string>
+    <string name="vote_average_label">User rating:</string>
+    <string name="release_date_label">Release date:</string>
 </resources>

@@ -1,26 +1,24 @@
 package com.example.android.popularmovies;
 
-import android.content.SharedPreferences;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.RecyclerView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.text.TextUtils;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-
 import com.example.android.popularmovies.data.PopularMoviesPreferences;
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.JsonUtils;
@@ -33,26 +31,17 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements PopularMoviesAdapter.ListItemClickListener,
         LoaderManager.LoaderCallbacks<String>,
-        SharedPreferences.OnSharedPreferenceChangeListener{
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String MOVIE_OBJECT = "movieObject";
-    private RecyclerView mRecyclerView;
-
-    private PopularMoviesAdapter mPopularMoviesAdapter;
-
-    private List<Movie> movieList;
-
-    private ProgressBar mLoadingIndicator;
-
-    private static String sortBy;
-
     private static final int POPULAR_MOVIES_LOADER = 0;
-
     private static final String SEARCH_QUERY_URL_EXTRA = "tmdbQueryExtra";
-    private String queryUrl;
-
     private static boolean PREFERENCES_HAVE_BEEN_UPDATED = false;
-
+    private RecyclerView mRecyclerView;
+    private PopularMoviesAdapter mPopularMoviesAdapter;
+    private List<Movie> movieList;
+    private ProgressBar mLoadingIndicator;
+    private String queryUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,39 +55,10 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        int loaderId = POPULAR_MOVIES_LOADER;
-
-        LoaderManager.LoaderCallbacks<String> callback = MainActivity.this;
-
-        Bundle bundleForLoader = null;
-
-        //getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
-
         checkConnectionAndExecute();
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
-    }
-
-    /**
-     * This method gets the list of movies to set in the recycler view through an AsyncTask
-     * loader.
-     * @param sortBy
-     */
-    private void loadMoviesData(String sortBy) {
-
-            URL tmdbUrl = NetworkUtils.buildSortedUrl(sortBy);
-
-            Bundle queryBundle = new Bundle();
-            queryBundle.putString(SEARCH_QUERY_URL_EXTRA, tmdbUrl.toString());
-
-            LoaderManager loaderManager = getSupportLoaderManager();
-            Loader<Object> moviesSearchLoader = loaderManager.getLoader(POPULAR_MOVIES_LOADER);
-            if (moviesSearchLoader == null){
-                loaderManager.initLoader(POPULAR_MOVIES_LOADER, queryBundle,this);
-            }else{
-                loaderManager.restartLoader(POPULAR_MOVIES_LOADER, queryBundle, this);
-            }
     }
 
     @Override
@@ -121,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (mPopularMoviesJson != null) {
                     deliverResult(mPopularMoviesJson);
-                }else {
+                } else {
                     mLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
@@ -163,7 +123,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         mPopularMoviesAdapter.setMovieList(movieList);
-
     }
 
     @Override
@@ -174,14 +133,14 @@ public class MainActivity extends AppCompatActivity
     /**
      * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
      */
-    private void checkConnectionAndExecute(){
+    private void checkConnectionAndExecute() {
         ConnectivityManager cm =
-                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
-        }else {
+            getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER, null, this);
+        } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.error_connection_message)
                     .setTitle(R.string.error_connection_tittle);
@@ -200,7 +159,7 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        if (PREFERENCES_HAVE_BEEN_UPDATED){
+        if (PREFERENCES_HAVE_BEEN_UPDATED) {
             getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
             PREFERENCES_HAVE_BEEN_UPDATED = false;
         }
@@ -222,17 +181,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuOptionsThatWasSelected = item.getItemId();
-            if (menuOptionsThatWasSelected == R.id.action_settings){
-                Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
-                startActivity(startSettingsActivity);
-                return true;
-               /* sortBy = "popularity.desc";
-                mPopularMoviesAdapter.setMovieList(null);
-                loadMoviesData(sortBy);
-        }else if (menuOptionsThatWasSelected == R.id.action_sort_rated) {
-                sortBy = "vote_average.desc";
-                mPopularMoviesAdapter.setMovieList(null);
-                loadMoviesData(sortBy);*/
+        if (menuOptionsThatWasSelected == R.id.action_settings) {
+            Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+            startActivity(startSettingsActivity);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -241,14 +193,6 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(SEARCH_QUERY_URL_EXTRA, queryUrl);
-    }
-
-    private void defaultSetup(){
-
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(this);
-
-
     }
 
     @Override
