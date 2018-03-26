@@ -1,11 +1,13 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.PicassoUtils;
@@ -62,42 +65,59 @@ public class DetailActivity extends AppCompatActivity
                 loadPosterImage(mMovieId);
             }
         }
-
         setMovieDetails(mMovie);
     }
 
     @Override
     public Loader<String> onCreateLoader(int id, final Bundle args) {
-        return new AsyncTaskLoader<String>(this) {
-            @Override
-            protected void onStartLoading() {
-                mLoadingIndicator.setVisibility(View.VISIBLE);
-                super.onStartLoading();
-                if (args == null) {
-                    return;
-                }
+        /**
+         * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
+         */
+        if (CheckIsOnline.checkConnection(this)) {
+            return new AsyncTaskLoader<String>(this) {
+                @Override
+                protected void onStartLoading() {
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
+                    super.onStartLoading();
+                    if (args == null) {
+                        return;
+                    }
 
 
-                forceLoad();
-            }
+                    forceLoad();
+                }
 
-            @Override
-            public String loadInBackground() {
-                String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
-                if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
-                    return null;
+                @Override
+                public String loadInBackground() {
+                    String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
+                    if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
+                        return null;
+                    }
+                    try {
+                        URL detailUrl = new URL(searchQueryUrlString);
+                        return NetworkUtils.getResponseFromHttpUrl(detailUrl);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
-                try {
-                    URL detailUrl = new URL(searchQueryUrlString);
-                    return NetworkUtils.getResponseFromHttpUrl(detailUrl);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
+            };
+        }else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.error_connection_message_detail_activity)
+                    .setTitle(R.string.error_connection_tittle);
+            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                    DetailActivity.this.finish();
+
                 }
-            }
-        };
+            });
+            builder.show();
+        }
+        return null;
     }
-
     @Override
     public void onLoadFinished(Loader<String> loader, String data) {
         //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
@@ -157,6 +177,10 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Populate the movie data in views
+     * @param movie the movie object selected to show the details
+     */
     private void setMovieDetails(Movie movie) {
 
         checkAndSetTex(movie.getOriginalTitle(),mTitleLabel);

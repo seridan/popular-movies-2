@@ -21,13 +21,10 @@ public class NetworkUtils {
     private final static String TAG = NetworkUtils.class.getSimpleName();
 
     private final static String MOVIE_DISCOVER_BASE_URL =
-            "https://api.themoviedb.org/3/discover/movie";
-
+            "https://api.themoviedb.org/3/movie";
 
     private final static String API_KEY_PARAM = "api_key";
-    private final static String apiKey = ""; //******* Set here the api key *************
-
-    private final static String PARAM_SORT = "sort_by";
+    private final static String apiKey = null; //******* Set here the api key *************
 
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
@@ -40,10 +37,11 @@ public class NetworkUtils {
     private static final String includeImageLanguage = "include_image_language=en,null";
 
 
+
     public static URL buildSortedUrl(String sortBy) {
         Uri builtUri = Uri.parse(MOVIE_DISCOVER_BASE_URL).buildUpon()
+                .appendPath(sortBy)
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
-                .appendQueryParameter(PARAM_SORT, sortBy)
                 .build();
 
         URL sortedUrl = null;
@@ -58,7 +56,6 @@ public class NetworkUtils {
 
     public static URL buildBackdropImageUrl (int movieId){
         Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
-
                 .appendPath(Integer.toString(movieId))
                 .appendEncodedPath(IMAGES_PATH)
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
@@ -92,12 +89,10 @@ public class NetworkUtils {
     }
 
 
-
     public static String getResponseFromHttpUrl (URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
             InputStream in = urlConnection.getInputStream();
-
             Scanner scanner = new Scanner(in);
             scanner.useDelimiter("\\A");
 
@@ -111,5 +106,4 @@ public class NetworkUtils {
             urlConnection.disconnect();
         }
     }
-
 }

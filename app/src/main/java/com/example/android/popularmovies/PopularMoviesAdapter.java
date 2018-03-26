@@ -9,10 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.model.Movie;
-import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.PicassoUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,6 +51,7 @@ class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.Pop
     @Override
     public void onBindViewHolder(PopularMoviesViewHolder holder, int position) {
 
+        //Call the method getImageFromUrl in PicassoUtils to handle the image a possible error.
         PicassoUtils.getImageFromUrl(mContext, mMovieList.get(position).getPosterPath(), holder.imageMovie);
         holder.movieTittle.setText(mMovieList.get(position).getOriginalTitle());
 

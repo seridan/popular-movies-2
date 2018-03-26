@@ -21,6 +21,8 @@ import android.view.View;
 import android.widget.ProgressBar;
 import com.example.android.popularmovies.data.PopularMoviesPreferences;
 import com.example.android.popularmovies.model.Movie;
+
+import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import org.json.JSONException;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String MOVIE_OBJECT = "movieObject";
-    private static final int POPULAR_MOVIES_LOADER = 0;
+    private static final int POPULAR_MOVIES_LOADER_ID = 0;
     private static final String SEARCH_QUERY_URL_EXTRA = "tmdbQueryExtra";
     private static boolean PREFERENCES_HAVE_BEEN_UPDATED = false;
     private RecyclerView mRecyclerView;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity
     private List<Movie> movieList;
     private ProgressBar mLoadingIndicator;
     private String queryUrl;
+    //private static boolean isConected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +58,12 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        checkConnectionAndExecute();
+        //isConected();
+        //checkConnectionAndExecute();
+        int loaderId = POPULAR_MOVIES_LOADER_ID;
+        LoaderManager.LoaderCallbacks<String> callbacks = MainActivity.this;
+        Bundle bundleForLoader = null;
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
@@ -72,50 +80,70 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public Loader<String> onCreateLoader(int id, final Bundle bundle) {
-        return new AsyncTaskLoader<String>(this) {
+        /**
+         * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
+         */
+        if (CheckIsOnline.checkConnection(this)) {
+            return new AsyncTaskLoader<String>(this) {
 
-            String mPopularMoviesJson;
+                String mPopularMoviesJson;
 
-            @Override
-            protected void onStartLoading() {
+                @Override
+                protected void onStartLoading() {
 
-                if (mPopularMoviesJson != null) {
-                    deliverResult(mPopularMoviesJson);
-                } else {
-                    mLoadingIndicator.setVisibility(View.VISIBLE);
-                    forceLoad();
+                    if (mPopularMoviesJson != null) {
+                        deliverResult(mPopularMoviesJson);
+                    } else {
+                        mLoadingIndicator.setVisibility(View.VISIBLE);
+                        forceLoad();
+                    }
                 }
-            }
 
-            @Override
-            public String loadInBackground() {
-                String sortBy = PopularMoviesPreferences
-                        .getPreferdSorted(MainActivity.this);
+                @Override
+                public String loadInBackground() {
 
-                URL tmdbRequestUrl = NetworkUtils.buildSortedUrl(sortBy);
+                    String sortBy = PopularMoviesPreferences
+                            .getPreferdSorted(MainActivity.this);
 
-                try {
-                    String jsonTmdbResponse = NetworkUtils.getResponseFromHttpUrl(tmdbRequestUrl);
-                    return jsonTmdbResponse;
+                    URL tmdbRequestUrl = NetworkUtils.buildSortedUrl(sortBy);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
+                    try {
+                        String jsonTmdbResponse = NetworkUtils.getResponseFromHttpUrl(tmdbRequestUrl);
+                        return jsonTmdbResponse;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
-            }
 
-            @Override
-            public void deliverResult(String data) {
-                mPopularMoviesJson = data;
-                super.deliverResult(data);
-            }
-        };
+                @Override
+                public void deliverResult(String data) {
+                    mPopularMoviesJson = data;
+                    super.deliverResult(data);
+                }
+            };
+        }else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.error_connection_message_main_activity)
+                    .setTitle(R.string.error_connection_tittle);
+            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                    MainActivity.this.finish();
+                }
+            });
+            builder.show();
+        }
+        return null;
     }
 
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<String> loader, String data) {
         queryUrl = data;
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mLoadingIndicator.setVisibility(View.GONE);
+
         try {
             movieList = JsonUtils.parseMovieList(queryUrl);
         } catch (JSONException e) {
@@ -130,45 +158,12 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    /**
-     * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
-     */
-    private void checkConnectionAndExecute() {
-        LoaderManager loaderManager = getSupportLoaderManager();
-        Loader<Object> moviesSearchLoader = loaderManager.getLoader(POPULAR_MOVIES_LOADER);
-
-        ConnectivityManager cm =
-                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting() && activeNetwork.isAvailable()) {
-            if (moviesSearchLoader == null){
-                getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER, null, this);
-            }else{
-                getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
-            }
-
-        } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this).setCancelable(false);
-            builder.setMessage(R.string.error_connection_message)
-                    .setTitle(R.string.error_connection_tittle);
-            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    recreate();
-                }
-            });
-
-            builder.show();
-        }
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
 
         if (PREFERENCES_HAVE_BEEN_UPDATED) {
-            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER, null, this);
+            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, null, this);
             PREFERENCES_HAVE_BEEN_UPDATED = false;
         }
     }
@@ -208,3 +203,5 @@ public class MainActivity extends AppCompatActivity
         PREFERENCES_HAVE_BEEN_UPDATED = true;
     }
 }
+
+
