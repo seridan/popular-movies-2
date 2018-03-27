@@ -25,6 +25,8 @@ import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.NoConnectionDialogFragment;
+
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity
     private List<Movie> movieList;
     private ProgressBar mLoadingIndicator;
     private String queryUrl;
-    //private static boolean isConected;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +60,7 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mPopularMoviesAdapter);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        //isConected();
-        //checkConnectionAndExecute();
+
         int loaderId = POPULAR_MOVIES_LOADER_ID;
         LoaderManager.LoaderCallbacks<String> callbacks = MainActivity.this;
         Bundle bundleForLoader = null;
@@ -124,17 +125,7 @@ public class MainActivity extends AppCompatActivity
                 }
             };
         }else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.error_connection_message_main_activity)
-                    .setTitle(R.string.error_connection_tittle);
-            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                    MainActivity.this.finish();
-                }
-            });
-            builder.show();
+            showDialog();
         }
         return null;
     }
@@ -161,10 +152,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
-        if (PREFERENCES_HAVE_BEEN_UPDATED) {
-            getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, null, this);
-            PREFERENCES_HAVE_BEEN_UPDATED = false;
+        //Check if a loader is not null.
+        Loader loader = getSupportLoaderManager().getLoader(POPULAR_MOVIES_LOADER_ID);
+        //Check if a loader is already initialized then restart, if not then we initialize it.
+        if (loader != null) {
+            if (PREFERENCES_HAVE_BEEN_UPDATED) {
+                getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, null, this);
+                PREFERENCES_HAVE_BEEN_UPDATED = false;
+            }else getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_ID, null, this);
         }
     }
 
@@ -201,6 +196,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         PREFERENCES_HAVE_BEEN_UPDATED = true;
+    }
+
+    /**
+     * This method creates a an alertDialog from NoConnectionDialogFragment class.
+     */
+    private void showDialog(){
+        NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
+        newFragment.setCancelable(false);
+        newFragment.show(getFragmentManager(), "dialog");
     }
 }
 

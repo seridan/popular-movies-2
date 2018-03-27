@@ -1,7 +1,10 @@
 package com.example.android.popularmovies.utilities;
 
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
+
+import com.example.android.popularmovies.BuildConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +27,7 @@ public class NetworkUtils {
             "https://api.themoviedb.org/3/movie";
 
     private final static String API_KEY_PARAM = "api_key";
-    private final static String apiKey = null; //******* Set here the api key *************
-
+    private final static String apiKey = BuildConfig.API_KEY; //***** Set the api key here******
 
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String IMAGE_SIZE_PATH = "w342";

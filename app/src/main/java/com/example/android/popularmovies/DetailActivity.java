@@ -19,6 +19,7 @@ import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.NoConnectionDialogFragment;
 import com.example.android.popularmovies.utilities.PicassoUtils;
 import org.json.JSONException;
 import java.io.IOException;
@@ -103,18 +104,7 @@ public class DetailActivity extends AppCompatActivity
                 }
             };
         }else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.error_connection_message_detail_activity)
-                    .setTitle(R.string.error_connection_tittle);
-            builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                    DetailActivity.this.finish();
-
-                }
-            });
-            builder.show();
+            showDialog();
         }
         return null;
     }
@@ -187,6 +177,14 @@ public class DetailActivity extends AppCompatActivity
         checkAndSetTex(movie.getOverview(),mSynopsisTv);
         checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
         checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
+    }
 
+    /**
+     * This method creates a an alertDialog from NoConnectionDialogFragment class.
+     */
+    private void showDialog(){
+        NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
+        newFragment.setCancelable(false);
+        newFragment.show(getFragmentManager(), "dialog");
     }
 }
