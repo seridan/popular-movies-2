@@ -3,6 +3,7 @@ package com.example.android.popularmovies.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -17,19 +18,24 @@ public class Movie implements Parcelable {
     private String posterPath;
     private String releaseDate;
     private double vote_average;
+    private ArrayList<String> trailers;
+    private ArrayList<String> reviews;
 
     public Movie() {
     }
 
     public Movie(int id, String originalTitle, String overview, String posterPath, String releaseDate,
-    double vote_average){
+    double vote_average, ArrayList<String> trailers, ArrayList<String> reviews){
         this.id = id;
         this.originalTitle = originalTitle;
         this.overview = overview;
         this.posterPath = posterPath;
         this.releaseDate = releaseDate;
         this.vote_average = vote_average;
+        this.trailers = trailers;
+        this.reviews = reviews;
     }
+
 
     protected Movie(Parcel in) {
         id = in.readInt();
@@ -38,6 +44,8 @@ public class Movie implements Parcelable {
         posterPath = in.readString();
         releaseDate = in.readString();
         vote_average = in.readDouble();
+        trailers = in.createStringArrayList();
+        reviews = in.createStringArrayList();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -100,6 +108,23 @@ public class Movie implements Parcelable {
         this.vote_average = vote_average;
     }
 
+    public ArrayList<String> getTrailers() {
+        return trailers;
+    }
+
+    public void setTrailers(ArrayList<String> trailers) {
+        this.trailers = trailers;
+    }
+
+    public ArrayList<String> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(ArrayList<String> reviews) {
+        this.reviews = reviews;
+    }
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -113,5 +138,7 @@ public class Movie implements Parcelable {
         parcel.writeString(posterPath);
         parcel.writeString(releaseDate);
         parcel.writeDouble(vote_average);
+        parcel.writeStringList(trailers);
+        parcel.writeStringList(reviews);
     }
 }

@@ -139,7 +139,7 @@ public class DetailActivity extends AppCompatActivity
      */
     private void loadPosterImage (int id){
         // Obtains the url to get the image JSON of the movie selected.
-        URL posterUrl = NetworkUtils.buildBackdropImageUrl(id);
+        URL posterUrl = NetworkUtils.buildDetailsMovieUrl(id);
         Bundle queryBundle = new Bundle();
         queryBundle.putString(SEARCH_QUERY_URL_EXTRA, posterUrl.toString());
         //Create the LoaderManager an check if is initialized or not.

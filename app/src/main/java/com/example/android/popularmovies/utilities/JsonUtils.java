@@ -26,45 +26,61 @@ public class JsonUtils {
     private static final String RESULTS = "results";
     private static final String BACKDROPS = "backdrops";
     private static final String FILE_PATH = "file_path";
+    private static final String VIDEOS_PATH = "videos";
+    private static final String REVIEWS_PATH = "reviews";
+
     private static final String TAG = JsonUtils.class.toString();
 
     /**
      * Once we have the String with the JSON of the Movie Discover witch contains a list of the movies
      * and their data we have to parse with this method and then return an ArrayList of the movies.
+     *
      * @param json String that contains the JSON.
      * @return ArrayList of the movies.
      * @throws JSONException
      */
-    public static List<Movie> parseMovieList (String json) throws JSONException {
+    public static List<Movie> parseMovieList(String json) throws JSONException {
 
-            JSONObject parentObject = new JSONObject(json);
-            JSONArray resultsArray = parentObject.getJSONArray(RESULTS);
-            List<Movie> parseMovieList = new ArrayList<>();
+        JSONObject parentObject = new JSONObject(json);
+        JSONArray resultsArray = parentObject.getJSONArray(RESULTS);
+        List<Movie> parseMovieList = new ArrayList<>();
 
-            if (resultsArray != null) {
-                for (int i = 0; i < resultsArray.length(); i++) {
-                    Movie parseMovie = new Movie();
-                    JSONObject movieObject = resultsArray.getJSONObject(i);
-                    parseMovie.setId(movieObject.optInt(ID));
-                    parseMovie.setOriginalTitle(movieObject.optString(ORIGINAL_TITLE));
-                    parseMovie.setPosterPath(movieObject.optString(POSTER_PATH));
-                    parseMovie.setOverview(movieObject.optString(OVERVIEW));
-                    parseMovie.setVote_average(movieObject.optDouble(VOTE_AVERAGE));
-                    parseMovie.setReleaseDate(movieObject.optString(RELEASE_DATE));
+        if (resultsArray != null) {
+            for (int i = 0; i < resultsArray.length(); i++) {
+                Movie parseMovie = new Movie();
+                JSONObject movieObject = resultsArray.getJSONObject(i);
+                parseMovie.setId(movieObject.optInt(ID));
+                parseMovie.setOriginalTitle(movieObject.optString(ORIGINAL_TITLE));
+                parseMovie.setPosterPath(movieObject.optString(POSTER_PATH));
+                parseMovie.setOverview(movieObject.optString(OVERVIEW));
+                parseMovie.setVote_average(movieObject.optDouble(VOTE_AVERAGE));
+                parseMovie.setReleaseDate(movieObject.optString(RELEASE_DATE));
 
-                    parseMovieList.add(parseMovie);
-                }
+                parseMovieList.add(parseMovie);
             }
-            return parseMovieList;
+        }
+        return parseMovieList;
     }
+
+   /* public static parseMovieDetailJson (String json){
+        JSONObject parseMovieDetail = null;
+        try {
+            parseMovieDetail = new JSONObject(json);
+            return new
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }*/
 
     /**
      * This method parse the JSON of the image that we'll use in the detail activity.
+     *
      * @param json String that contains the JSON from the URL.
      * @return String with the path to the image taking from the JSON.
      * @throws JSONException
      */
-    public static String getDetailImage (String json) throws JSONException {
+    public static String getDetailImage(String json) throws JSONException {
         String filePath;
         JSONObject parentObject = new JSONObject(json);
         JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
@@ -72,7 +88,7 @@ public class JsonUtils {
         if (backDropArray != null && backDropArray.length() > 0) {
 
             JSONObject backDroPObject = backDropArray.getJSONObject(0);
-            if (backDroPObject != null){
+            if (backDroPObject != null) {
                 filePath = backDroPObject.getString(FILE_PATH);
                 Log.v(TAG, "parse filepath " + filePath);
                 return filePath;
@@ -81,4 +97,43 @@ public class JsonUtils {
         return null;
     }
 
-}
+    private static List<String> getTrailersMovie(JSONObject movieJson) throws JSONException {
+        JSONObject videosObject = movieJson.optJSONObject(VIDEOS_PATH);
+        JSONArray videosArray = videosObject.getJSONArray(RESULTS);
+        List<String> stringList = new ArrayList<>();
+
+        if (videosArray != null) {
+
+            for (int i = 0; i < videosArray.length(); i++) {
+                JSONObject videoId = videosArray.getJSONObject(i);
+                stringList.add((String) videoId.get(ID));
+
+                Log.v(TAG, "id video array " + stringList.toString());
+                return stringList;
+            }
+        }
+
+        return stringList;
+    }
+
+    private static List<String> getReviewsMovie(JSONObject movieJson) throws JSONException {
+        JSONObject reviewObject = movieJson.optJSONObject(REVIEWS_PATH);
+        JSONArray reviewsArray = reviewObject.getJSONArray(RESULTS);
+        List<String> stringList = new ArrayList<>();
+
+        if (reviewsArray != null) {
+
+            for (int i = 0; i < reviewsArray.length(); i++) {
+                JSONObject reviews = reviewsArray.getJSONObject(i);
+                stringList.add((String) reviews.get(ID));
+
+                Log.v(TAG, "reviews array " + stringList.toString());
+                return stringList;
+            }
+        }
+
+        return stringList;
+    }
+
+
+    }
