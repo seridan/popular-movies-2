@@ -24,6 +24,8 @@ import com.example.android.popularmovies.utilities.PicassoUtils;
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<String> {
@@ -33,8 +35,10 @@ public class DetailActivity extends AppCompatActivity
     private TextView mSynopsisTv;
     private TextView mVoteAverage;
     private TextView mReleaseDate;
+    private TextView mReviewTv;
     private ProgressBar mLoadingIndicator;
-    private Movie mMovie;
+    private static Movie mMovie;
+    private List<String> review;
 
     Context context;
 
@@ -54,6 +58,7 @@ public class DetailActivity extends AppCompatActivity
         mSynopsisTv = findViewById(R.id.synopsis_tv);
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
+        mReviewTv = findViewById(R.id.review_tv);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         context = this;
@@ -66,7 +71,7 @@ public class DetailActivity extends AppCompatActivity
                 loadPosterImage(mMovieId);
             }
         }
-        setMovieDetails(mMovie);
+
     }
 
     @Override
@@ -125,6 +130,14 @@ public class DetailActivity extends AppCompatActivity
             }
         }
         mLoadingIndicator.setVisibility(View.INVISIBLE);
+        try {
+
+            review = JsonUtils.getReviewsMovie(data);
+            mMovie.setReviews(review);
+            setMovieDetails(mMovie);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -177,6 +190,7 @@ public class DetailActivity extends AppCompatActivity
         checkAndSetTex(movie.getOverview(),mSynopsisTv);
         checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
         checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
+        checkAndSetTex(TextUtils.join("\n", movie.getReviews()), mReviewTv);
     }
 
     /**
@@ -186,5 +200,9 @@ public class DetailActivity extends AppCompatActivity
         NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
         newFragment.setCancelable(false);
         newFragment.show(getFragmentManager(), "dialog");
+    }
+
+    private void setMovieReview (Movie mMovie){
+
     }
 }

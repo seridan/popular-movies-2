@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 
 /**
  * Created by seridan on 06/03/2018.
@@ -18,14 +18,14 @@ public class Movie implements Parcelable {
     private String posterPath;
     private String releaseDate;
     private double vote_average;
-    private ArrayList<String> trailers;
-    private ArrayList<String> reviews;
+    private List<String> trailers;
+    private List<String> reviews;
 
     public Movie() {
     }
 
     public Movie(int id, String originalTitle, String overview, String posterPath, String releaseDate,
-    double vote_average, ArrayList<String> trailers, ArrayList<String> reviews){
+    double vote_average, List<String> trailers, List<String> reviews){
         this.id = id;
         this.originalTitle = originalTitle;
         this.overview = overview;
@@ -108,19 +108,19 @@ public class Movie implements Parcelable {
         this.vote_average = vote_average;
     }
 
-    public ArrayList<String> getTrailers() {
+    public List<String> getTrailers() {
         return trailers;
     }
 
-    public void setTrailers(ArrayList<String> trailers) {
+    public void setTrailers(List<String> trailers) {
         this.trailers = trailers;
     }
 
-    public ArrayList<String> getReviews() {
+    public List<String> getReviews() {
         return reviews;
     }
 
-    public void setReviews(ArrayList<String> reviews) {
+    public void setReviews(List<String> reviews) {
         this.reviews = reviews;
     }
 

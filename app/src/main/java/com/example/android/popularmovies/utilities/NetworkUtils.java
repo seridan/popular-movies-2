@@ -38,7 +38,7 @@ public class NetworkUtils {
     private static final String INCLUDE_IMAGE_LANGUAGE = "include_image_language";
     private static final String includeImageLanguage = "include_image_language=en,null";
 
-    private static final String APPEND_TO_RESPONSE_QUERY = "append_to_response_query";
+    private static final String APPEND_TO_RESPONSE_QUERY = "append_to_response";
     private static String appendToResponseParam = "videos,images,reviews";
 
 
@@ -63,7 +63,7 @@ public class NetworkUtils {
     public static URL buildDetailsMovieUrl (int movieId){
         Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
                 .appendPath(Integer.toString(movieId))
-                .appendEncodedPath(IMAGES_PATH)
+
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
                 .appendQueryParameter(APPEND_TO_RESPONSE_QUERY, appendToResponseParam)
                 .build();

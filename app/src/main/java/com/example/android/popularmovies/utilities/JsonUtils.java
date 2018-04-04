@@ -28,6 +28,9 @@ public class JsonUtils {
     private static final String FILE_PATH = "file_path";
     private static final String VIDEOS_PATH = "videos";
     private static final String REVIEWS_PATH = "reviews";
+    private static final String IMAGES_PATH = "images";
+    private static final String CONTENT_PATH = "content";
+    private static final String AUTHOR_PATH = "author";
 
     private static final String TAG = JsonUtils.class.toString();
 
@@ -59,6 +62,7 @@ public class JsonUtils {
                 parseMovieList.add(parseMovie);
             }
         }
+        Log.v(TAG, "list movies " + parseMovieList.toString());
         return parseMovieList;
     }
 
@@ -83,7 +87,8 @@ public class JsonUtils {
     public static String getDetailImage(String json) throws JSONException {
         String filePath;
         JSONObject parentObject = new JSONObject(json);
-        JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
+        JSONObject imagesObject = parentObject.optJSONObject(IMAGES_PATH);
+        JSONArray backDropArray = imagesObject.getJSONArray(BACKDROPS);
 
         if (backDropArray != null && backDropArray.length() > 0) {
 
@@ -97,8 +102,9 @@ public class JsonUtils {
         return null;
     }
 
-    private static List<String> getTrailersMovie(JSONObject movieJson) throws JSONException {
-        JSONObject videosObject = movieJson.optJSONObject(VIDEOS_PATH);
+    public static List<String> getTrailersMovie(String movieJson) throws JSONException {
+        JSONObject parentObject = new JSONObject(movieJson);
+        JSONObject videosObject = parentObject.optJSONObject(VIDEOS_PATH);
         JSONArray videosArray = videosObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
@@ -109,26 +115,31 @@ public class JsonUtils {
                 stringList.add((String) videoId.get(ID));
 
                 Log.v(TAG, "id video array " + stringList.toString());
-                return stringList;
+
             }
         }
 
         return stringList;
     }
 
-    private static List<String> getReviewsMovie(JSONObject movieJson) throws JSONException {
-        JSONObject reviewObject = movieJson.optJSONObject(REVIEWS_PATH);
+    public static List<String> getReviewsMovie(String movieJson) throws JSONException {
+        JSONObject parentObject = new JSONObject(movieJson);
+        JSONObject reviewObject = parentObject.optJSONObject(REVIEWS_PATH);
         JSONArray reviewsArray = reviewObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
         if (reviewsArray != null) {
-
             for (int i = 0; i < reviewsArray.length(); i++) {
-                JSONObject reviews = reviewsArray.getJSONObject(i);
-                stringList.add((String) reviews.get(ID));
+                //stringList.add((String)reviewsArray.opt(i));
+                JSONObject reviews = reviewsArray.getJSONObject(i++);
+                String author = reviews.getString(AUTHOR_PATH);
+                String content = reviews.getString(CONTENT_PATH);
+                //stringList.add((String) reviews.get(CONTENT_PATH));
+                //stringList.add((String) reviews.get("author"));
+                stringList.add("Author: " + author + "\n" + content + "\n");
 
                 Log.v(TAG, "reviews array " + stringList.toString());
-                return stringList;
+
             }
         }
 
