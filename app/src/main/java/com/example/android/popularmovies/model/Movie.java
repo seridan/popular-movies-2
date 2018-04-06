@@ -18,7 +18,7 @@ public class Movie implements Parcelable {
     private String posterPath;
     private String releaseDate;
     private double vote_average;
-    private List<String> trailers;
+    private List<String> videos;
     private List<String> reviews;
 
     public Movie() {
@@ -32,7 +32,7 @@ public class Movie implements Parcelable {
         this.posterPath = posterPath;
         this.releaseDate = releaseDate;
         this.vote_average = vote_average;
-        this.trailers = trailers;
+        this.videos = trailers;
         this.reviews = reviews;
     }
 
@@ -44,7 +44,7 @@ public class Movie implements Parcelable {
         posterPath = in.readString();
         releaseDate = in.readString();
         vote_average = in.readDouble();
-        trailers = in.createStringArrayList();
+        videos = in.createStringArrayList();
         reviews = in.createStringArrayList();
     }
 
@@ -108,12 +108,12 @@ public class Movie implements Parcelable {
         this.vote_average = vote_average;
     }
 
-    public List<String> getTrailers() {
-        return trailers;
+    public List<String> getVideos() {
+        return videos;
     }
 
-    public void setTrailers(List<String> trailers) {
-        this.trailers = trailers;
+    public void setVideo(List<String> videos) {
+        this.videos = videos;
     }
 
     public List<String> getReviews() {
@@ -138,7 +138,7 @@ public class Movie implements Parcelable {
         parcel.writeString(posterPath);
         parcel.writeString(releaseDate);
         parcel.writeDouble(vote_average);
-        parcel.writeStringList(trailers);
+        parcel.writeStringList(videos);
         parcel.writeStringList(reviews);
     }
 }

@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity
                 public String loadInBackground() {
 
                     String sortBy = PopularMoviesPreferences
-                            .getPreferdSorted(MainActivity.this);
+                            .getPreferedSorted(MainActivity.this);
 
                     URL tmdbRequestUrl = NetworkUtils.buildSortedUrl(sortBy);
 

@@ -1,16 +1,16 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
+
+
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -24,11 +24,10 @@ import com.example.android.popularmovies.utilities.PicassoUtils;
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DetailActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<String> {
+        implements LoaderManager.LoaderCallbacks<String[]> {
 
     private ImageView mPosterIv;
     private TextView mTitleLabel;
@@ -36,16 +35,17 @@ public class DetailActivity extends AppCompatActivity
     private TextView mVoteAverage;
     private TextView mReleaseDate;
     private TextView mReviewTv;
+    private TextView mVideoTv;
     private ProgressBar mLoadingIndicator;
     private static Movie mMovie;
     private List<String> review;
+    private List<String> video;
 
     Context context;
 
     final static String TAG = DetailActivity.class.getSimpleName();
-    final static int DETAIL_ACTIVITY_LOADER = 22;
-    final static String SEARCH_QUERY_URL_EXTRA = "searchQueryUrlExtra";
-
+    final static int DETAIL_ACTIVITY_LOADER_ID = 0;
+    static String[] searchQueryUrlExtra;
 
 
     @Override
@@ -59,6 +59,7 @@ public class DetailActivity extends AppCompatActivity
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
         mReviewTv = findViewById(R.id.review_tv);
+        mVideoTv = findViewById(R.id.videos_tv);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         context = this;
@@ -66,46 +67,64 @@ public class DetailActivity extends AppCompatActivity
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity != null) {
             mMovie = intentThatStartedThisActivity.getParcelableExtra("movieObject");
-            if (mMovie != null) {
-                int mMovieId = mMovie.getId();
-                loadPosterImage(mMovieId);
-            }
+
         }
+        int loaderId = DETAIL_ACTIVITY_LOADER_ID;
+        LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
+        Bundle bundleForLoader = null;
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
+
+
+
 
     }
 
     @Override
-    public Loader<String> onCreateLoader(int id, final Bundle args) {
+    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
         /**
          * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
          */
         if (CheckIsOnline.checkConnection(this)) {
-            return new AsyncTaskLoader<String>(this) {
+            return  new AsyncTaskLoader<String[]>(this) {
+
+                String[] mJsonStrings;
                 @Override
                 protected void onStartLoading() {
-                    mLoadingIndicator.setVisibility(View.VISIBLE);
-                    super.onStartLoading();
-                    if (args == null) {
-                        return;
+
+                    if (mJsonStrings != null){
+                        deliverResult(mJsonStrings);
+                    }else {
+                        mLoadingIndicator.setVisibility(View.VISIBLE);
+                        forceLoad();
                     }
-
-
-                    forceLoad();
                 }
 
                 @Override
-                public String loadInBackground() {
-                    String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
-                    if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
-                        return null;
-                    }
+                public String[] loadInBackground() {
+
+                    String[] jsons = new String[3];
+
+                    URL backDropImageRequestUrl = NetworkUtils.buildBackdropImageUrl(mMovie.getId());
+                    URL reviewRequestUrl = NetworkUtils.buildReviewsMovieUrl(mMovie.getId());
+                    URL videoRequestUrl = NetworkUtils.buildVideosMovieUrl(mMovie.getId());
+
                     try {
-                        URL detailUrl = new URL(searchQueryUrlString);
-                        return NetworkUtils.getResponseFromHttpUrl(detailUrl);
+
+                        jsons[0] = NetworkUtils.getResponseFromHttpUrl(backDropImageRequestUrl);
+                        jsons[1] = NetworkUtils.getResponseFromHttpUrl(reviewRequestUrl);
+                        jsons[2] = NetworkUtils.getResponseFromHttpUrl(videoRequestUrl);
+                        return  jsons;
+
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
                     }
+                }
+
+                @Override
+                public void deliverResult(String[] data) {
+                    mJsonStrings = data;
+                    super.deliverResult(data);
                 }
             };
         }else {
@@ -113,36 +132,45 @@ public class DetailActivity extends AppCompatActivity
         }
         return null;
     }
+
     @Override
-    public void onLoadFinished(Loader<String> loader, String data) {
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
         //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
 
-        if (data == null) {
-            data = mMovie.getPosterPath();
-            PicassoUtils.getImageFromUrl(context, data, mPosterIv);
-            //If not null, get the data to pass the JsonUtils and obtain the backdrop image
-        }else {
+
             try {
-                String backDropPath = JsonUtils.getDetailImage(data);
+                String backDropPath = JsonUtils.getDetailImage(data[0]);
                 PicassoUtils.getImageFromUrl(context, backDropPath, mPosterIv);
+
+                review = JsonUtils.getReviewsMovie(data[1]);
+                mMovie.setReviews(review);
+
+                video = JsonUtils.getVideosMovie(data[2]);
+                mMovie.setVideo(video);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-        try {
 
-            review = JsonUtils.getReviewsMovie(data);
-            mMovie.setReviews(review);
-            setMovieDetails(mMovie);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        setMovieDetails(mMovie);
+
     }
 
     @Override
-    public void onLoaderReset(Loader<String> loader) {
+    public void onLoaderReset(Loader<String[]> loader) {
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //Check if a loader is not null.
+        Loader loader = getSupportLoaderManager().getLoader(DETAIL_ACTIVITY_LOADER_ID);
+        //Check if a loader is already initialized then restart, if not then we initialize it.
+        if (loader != null) {
+            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_LOADER_ID, null, this);
+        }
     }
 
     /**
@@ -150,9 +178,9 @@ public class DetailActivity extends AppCompatActivity
      * loader. Obtains the url to get the image JSON of the movie selected.
      * @param id int of the id of selected movie.
      */
-    private void loadPosterImage (int id){
+   /* private void loadPosterImage (int id){
         // Obtains the url to get the image JSON of the movie selected.
-        URL posterUrl = NetworkUtils.buildDetailsMovieUrl(id);
+        URL posterUrl = NetworkUtils.buildBackdropImageUrl(id);
         Bundle queryBundle = new Bundle();
         queryBundle.putString(SEARCH_QUERY_URL_EXTRA, posterUrl.toString());
         //Create the LoaderManager an check if is initialized or not.
@@ -164,7 +192,7 @@ public class DetailActivity extends AppCompatActivity
         }else{
             loaderManager.restartLoader(DETAIL_ACTIVITY_LOADER, queryBundle, this);
         }
-    }
+    }*/
 
     /**
      * This method check if there is value to set in the TextxView. If not will set the error message.
@@ -191,6 +219,7 @@ public class DetailActivity extends AppCompatActivity
         checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
         checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
         checkAndSetTex(TextUtils.join("\n", movie.getReviews()), mReviewTv);
+        checkAndSetTex(TextUtils.join("\n", movie.getVideos()), mReviewTv);
     }
 
     /**
@@ -202,7 +231,5 @@ public class DetailActivity extends AppCompatActivity
         newFragment.show(getFragmentManager(), "dialog");
     }
 
-    private void setMovieReview (Movie mMovie){
 
-    }
 }

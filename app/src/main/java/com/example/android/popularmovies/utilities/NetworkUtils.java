@@ -38,6 +38,9 @@ public class NetworkUtils {
     private static final String INCLUDE_IMAGE_LANGUAGE = "include_image_language";
     private static final String includeImageLanguage = "include_image_language=en,null";
 
+    private static final String REVIEWS_PATH = "reviews";
+    private static final String VIDEOS_PATH = "videos";
+
     private static final String APPEND_TO_RESPONSE_QUERY = "append_to_response";
     private static String appendToResponseParam = "videos,images,reviews";
 
@@ -60,7 +63,8 @@ public class NetworkUtils {
         return sortedUrl;
     }
 
-    public static URL buildDetailsMovieUrl (int movieId){
+    //This method is to use with append to response query.
+    /*public static URL buildDetailsMovieUrl (int movieId){
         Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
                 .appendPath(Integer.toString(movieId))
 
@@ -76,6 +80,40 @@ public class NetworkUtils {
         }
         Log.v(TAG, "Built deatails Moview URI " + imageUrl);
         return imageUrl;
+    }*/
+
+    public static URL buildReviewsMovieUrl (int movieId){
+        Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
+                .appendPath(Integer.toString(movieId))
+                .appendPath(REVIEWS_PATH)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+
+        URL reviewUrl = null;
+        try {
+            reviewUrl = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.v(TAG, "Built reviews movie URI " + reviewUrl);
+        return reviewUrl;
+    }
+
+    public static URL buildVideosMovieUrl (int movieId){
+        Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
+                .appendPath(Integer.toString(movieId))
+                .appendPath(VIDEOS_PATH)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+
+        URL videoUrl = null;
+        try {
+            videoUrl = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Log.v(TAG, "Built reviews movie URI " + videoUrl);
+        return videoUrl;
     }
 
     public static URL buildBackdropImageUrl (int movieId){

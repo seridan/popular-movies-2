@@ -31,6 +31,7 @@ public class JsonUtils {
     private static final String IMAGES_PATH = "images";
     private static final String CONTENT_PATH = "content";
     private static final String AUTHOR_PATH = "author";
+    private static final String KEY = "key";
 
     private static final String TAG = JsonUtils.class.toString();
 
@@ -66,16 +67,7 @@ public class JsonUtils {
         return parseMovieList;
     }
 
-   /* public static parseMovieDetailJson (String json){
-        JSONObject parseMovieDetail = null;
-        try {
-            parseMovieDetail = new JSONObject(json);
-            return new
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-    }*/
 
     /**
      * This method parse the JSON of the image that we'll use in the detail activity.
@@ -84,7 +76,26 @@ public class JsonUtils {
      * @return String with the path to the image taking from the JSON.
      * @throws JSONException
      */
-    public static String getDetailImage(String json) throws JSONException {
+
+    public static String getDetailImage (String json) throws JSONException {
+        String filePath;
+        JSONObject parentObject = new JSONObject(json);
+        JSONArray backDropArray = parentObject.getJSONArray(BACKDROPS);
+
+        if (backDropArray != null && backDropArray.length() > 0) {
+
+            JSONObject backDroPObject = backDropArray.getJSONObject(0);
+            if (backDroPObject != null){
+                filePath = backDroPObject.getString(FILE_PATH);
+                Log.v(TAG, "parse filepath " + filePath);
+                return filePath;
+            }
+        }
+        return null;
+    }
+
+    //This method is to use with append to response query.
+   /* public static String getDetailImage(String json) throws JSONException {
         String filePath;
         JSONObject parentObject = new JSONObject(json);
         JSONObject imagesObject = parentObject.optJSONObject(IMAGES_PATH);
@@ -100,23 +111,20 @@ public class JsonUtils {
             }
         }
         return null;
-    }
+    }*/
 
-    public static List<String> getTrailersMovie(String movieJson) throws JSONException {
+    public static List<String> getVideosMovie(String movieJson) throws JSONException {
         JSONObject parentObject = new JSONObject(movieJson);
-        JSONObject videosObject = parentObject.optJSONObject(VIDEOS_PATH);
-        JSONArray videosArray = videosObject.getJSONArray(RESULTS);
+        //JSONObject videosObject = parentObject.optJSONObject(VIDEOS_PATH);
+        JSONArray videosArray = parentObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
         if (videosArray != null) {
 
             for (int i = 0; i < videosArray.length(); i++) {
                 JSONObject videoId = videosArray.getJSONObject(i);
-                stringList.add((String) videoId.get(ID));
-
-                Log.v(TAG, "id video array " + stringList.toString());
-
-            }
+                stringList.add((String) videoId.get(KEY));
+            } Log.v(TAG, "key video array " + stringList.toString());
         }
 
         return stringList;
@@ -124,8 +132,8 @@ public class JsonUtils {
 
     public static List<String> getReviewsMovie(String movieJson) throws JSONException {
         JSONObject parentObject = new JSONObject(movieJson);
-        JSONObject reviewObject = parentObject.optJSONObject(REVIEWS_PATH);
-        JSONArray reviewsArray = reviewObject.getJSONArray(RESULTS);
+        //JSONObject reviewObject = parentObject.optJSONObject(REVIEWS_PATH);
+        JSONArray reviewsArray = parentObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
         if (reviewsArray != null) {

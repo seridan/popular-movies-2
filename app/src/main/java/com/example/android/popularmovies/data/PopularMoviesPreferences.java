@@ -12,7 +12,7 @@ import com.example.android.popularmovies.R;
 
 public class PopularMoviesPreferences {
 
-    public static String getPreferdSorted (Context context){
+    public static String getPreferedSorted (Context context){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String keyForSortBy = context.getString(R.string.pref_sort_by_key);
         String defaultSortBy = context.getString(R.string.pref_sort_by_top_rated_value);
