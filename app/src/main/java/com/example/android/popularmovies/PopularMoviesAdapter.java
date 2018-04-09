@@ -16,7 +16,8 @@ import java.util.List;
 /**
  * Created by seridan on 08/03/2018.
  */
-class PopularMoviesAdapter extends RecyclerView.Adapter<PopularMoviesAdapter.PopularMoviesViewHolder>{
+class PopularMoviesAdapter extends
+        RecyclerView.Adapter<PopularMoviesAdapter.PopularMoviesViewHolder>{
 
     private List<Movie> mMovieList;
     private Context mContext;

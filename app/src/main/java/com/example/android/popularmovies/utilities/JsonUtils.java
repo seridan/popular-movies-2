@@ -124,10 +124,12 @@ public class JsonUtils {
             for (int i = 0; i < videosArray.length(); i++) {
                 JSONObject videoId = videosArray.getJSONObject(i);
                 stringList.add((String) videoId.get(KEY));
-            } Log.v(TAG, "key video array " + stringList.toString());
+            }
+            Log.v(TAG, "key video array " + stringList.toString());
+            return stringList;
         }
 
-        return stringList;
+        return null;
     }
 
     public static List<String> getReviewsMovie(String movieJson) throws JSONException {
@@ -145,14 +147,12 @@ public class JsonUtils {
                 //stringList.add((String) reviews.get(CONTENT_PATH));
                 //stringList.add((String) reviews.get("author"));
                 stringList.add("Author: " + author + "\n" + content + "\n");
-
-                Log.v(TAG, "reviews array " + stringList.toString());
-
             }
+            Log.v(TAG, "reviews array " + stringList.toString());
+            return stringList;
         }
 
-        return stringList;
+        return null;
+    }
     }
 
-
-    }

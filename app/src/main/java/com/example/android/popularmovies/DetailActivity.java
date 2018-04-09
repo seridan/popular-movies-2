@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 
@@ -10,6 +11,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,6 +27,7 @@ import com.example.android.popularmovies.utilities.PicassoUtils;
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DetailActivity extends AppCompatActivity
@@ -38,31 +42,39 @@ public class DetailActivity extends AppCompatActivity
     private TextView mVideoTv;
     private ProgressBar mLoadingIndicator;
     private static Movie mMovie;
-    private List<String> review;
-    private List<String> video;
+    private static List<String> review;
+    private static List<String> video;
+    private RecyclerView mRecyclerView;
+    private DetailMainAdapter mDetailMainAdapter;
 
-    Context context;
+    private Context mContext;
 
     final static String TAG = DetailActivity.class.getSimpleName();
     final static int DETAIL_ACTIVITY_LOADER_ID = 0;
+    private static List<Object> objects = new ArrayList<>();
     static String[] searchQueryUrlExtra;
+    public static Resources mResources;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        mContext = this;
+        mResources = getResources();
 
         mPosterIv = findViewById(R.id.poster_iv);
         mTitleLabel = findViewById(R.id.title_movie);
         mSynopsisTv = findViewById(R.id.synopsis_tv);
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
-        mReviewTv = findViewById(R.id.review_tv);
-        mVideoTv = findViewById(R.id.videos_tv);
+
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        context = this;
+        mRecyclerView = findViewById(R.id.detail_recycler_view);
+
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
 
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity != null) {
@@ -73,9 +85,6 @@ public class DetailActivity extends AppCompatActivity
         LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
         Bundle bundleForLoader = null;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
-
-
-
 
     }
 
@@ -140,7 +149,7 @@ public class DetailActivity extends AppCompatActivity
 
             try {
                 String backDropPath = JsonUtils.getDetailImage(data[0]);
-                PicassoUtils.getImageFromUrl(context, backDropPath, mPosterIv);
+                PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
 
                 review = JsonUtils.getReviewsMovie(data[1]);
                 mMovie.setReviews(review);
@@ -154,6 +163,13 @@ public class DetailActivity extends AppCompatActivity
 
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         setMovieDetails(mMovie);
+        mDetailMainAdapter = new DetailMainAdapter(this, getObject());
+        mRecyclerView.setAdapter(mDetailMainAdapter);
+        //mDetailMainAdapter.notifyDataSetChanged();
+
+
+        //mDetailMainAdapter.setObjectList(getObject());
+
 
     }
 
@@ -218,8 +234,7 @@ public class DetailActivity extends AppCompatActivity
         checkAndSetTex(movie.getOverview(),mSynopsisTv);
         checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
         checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
-        checkAndSetTex(TextUtils.join("\n", movie.getReviews()), mReviewTv);
-        checkAndSetTex(TextUtils.join("\n", movie.getVideos()), mReviewTv);
+
     }
 
     /**
@@ -230,6 +245,32 @@ public class DetailActivity extends AppCompatActivity
         newFragment.setCancelable(false);
         newFragment.show(getFragmentManager(), "dialog");
     }
+
+    private List<Object> getObject(){
+        objects.add(getReviews().get(0));
+        objects.add(getVideos().get(0));
+        return objects;
+    }
+
+    public static List<String> getReviews(){
+
+        if (review.size() > 0) {
+            return review;
+        }else {
+            review.add(mResources.getString(R.string.no_reviews_error));
+            return review;
+        }
+    }
+
+    public static List<String> getVideos(){
+        if (video.size() > 0) {
+            return video;
+        }else {
+            video.add(mResources.getString(R.string.no_videos_error));
+            return video;
+        }
+    }
+
 
 
 }

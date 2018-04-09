@@ -39,4 +39,6 @@
         connection.</string>
     <string name="error_connection_tittle">Connection error</string>
     <string name="retry_button">Accept</string>
+    <string name="no_reviews_error">There are no reviews yet.</string>
+    <string name="no_videos_error">There are no videos yet.</string>
 </resources>

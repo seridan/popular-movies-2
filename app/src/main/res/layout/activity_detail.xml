@@ -91,21 +91,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@+id/release_date_tv">
+            app:layout_constraintTop_toBottomOf="@+id/release_date_tv"
+            tools:context="com.example.android.popularmovies.DetailActivity">
 
-            <TextView
-                android:id="@+id/review_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/detail_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-                />
 
-            <TextView
-                android:id="@+id/videos_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                 />
         </LinearLayout>
 
         <Space
