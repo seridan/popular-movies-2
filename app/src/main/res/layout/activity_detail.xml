@@ -5,7 +5,8 @@
     android:id="@+id/activity_detail_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackGround">
+    android:background="@color/colorBackGround"
+    tools:context=".DetailActivity">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -91,8 +92,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="20dp"
             app:layout_constraintTop_toBottomOf="@+id/release_date_tv"
             tools:context="com.example.android.popularmovies.DetailActivity">
+
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/detail_recycler_view"

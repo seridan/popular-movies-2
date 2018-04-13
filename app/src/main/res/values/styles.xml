@@ -2,6 +2,7 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -9,12 +10,13 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
+
     <style name="ActivityDetailLabelStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginLeft">8dp</item>
         <item name="android:layout_marginStart" tools:targetApi="jelly_bean_mr1">8dp</item>
-        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginTop">28dp</item>
         <item name="layout_constraintStart_toStartOf">parent</item>
         <item name="layout_constraintLeft_toLeftOf">parent</item>
         <item name="android:textStyle">bold</item>
@@ -35,6 +37,38 @@
         <item name="layout_constraintStart_toStartOf">parent</item>
         <item name="android:textColor">@color/colorFont</item>
         <item name="android:textSize">@dimen/text_sz_medium</item>
+        <item name="android:lineSpacingExtra">4dp</item>
     </style>
+
+    <style name="ReviewsTvStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:textColor">@color/colorFont</item>
+        <item name="android:textSize">@dimen/text_sz_medium</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+    </style>
+
+    <style name="VideoAndReviewsLabelStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:layout_marginTop">28dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorFont</item>
+        <item name="android:textSize">@dimen/text_sz_regular</item>
+    </style>
+
+    <style name="DetailSelectedReview">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="android:textColor">@color/colorFont</item>
+        <item name="android:textSize">@dimen/text_sz_medium</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+
+
+    </style>
+
 
 </resources>

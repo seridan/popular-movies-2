@@ -1,6 +1,9 @@
 package com.example.android.popularmovies;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
@@ -16,12 +19,14 @@ public class ReviewsAdapter extends
         RecyclerView.Adapter<ReviewsAdapter.ReviewsAdapterViewHolder> {
 
     private List<String> mReviewsList;
-    private static int mExpandedPosition = -1;
+    private Context mContext;
+
     //ViewGroup recycler = (ViewGroup)(R.layout.detail_reviews_recycle_view);
     //private Context mContext;
 
-    public ReviewsAdapter (List<String> data){
+    public ReviewsAdapter (List<String> data, Context context){
         mReviewsList = data;
+        mContext = context;
     }
 
     @Override
@@ -39,20 +44,34 @@ public class ReviewsAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(ReviewsAdapter.ReviewsAdapterViewHolder holder, final int position) {
+    public void onBindViewHolder(final ReviewsAdapter.ReviewsAdapterViewHolder holder, final int position) {
 
-        final boolean isExpanded = position==mExpandedPosition;
+        //final RecyclerViewHolder recyclerViewHolder = (RecyclerViewHolder) holder;
+        holder.reviewTv.setText(mReviewsList.get(position));
+        //holder.reviewTv.setText(mReviewsList.get(position));
+        //holder.reviewTvExpandable.setText(mReviewsList.get(position));
+
+        /*final boolean isExpanded = position==mExpandedPosition;
         holder.reviewTvExpandable.setVisibility(isExpanded?View.VISIBLE:View.GONE);
-        holder.itemView.setActivated(isExpanded);
+
+        holder.itemView.setActivated(isExpanded);*/
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
-                mExpandedPosition = isExpanded ? -1:position;
-                TransitionManager.beginDelayedTransition((ViewGroup) view.getParent());
-                notifyDataSetChanged();
-            }
+                //mExpandedPosition = isExpanded ? -1:holder.getAdapterPosition();
+                //TransitionManager.beginDelayedTransition((ViewGroup) view.getParent());
+                Intent intent = new Intent(mContext, ReviewViewActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, mReviewsList.get(position));
+                mContext.startActivity(intent);
+
+                }
+
+
+
         });
+
+
 
         //holder.reviewTv.setText(mReviewsList.get(position));
     }
@@ -66,13 +85,13 @@ public class ReviewsAdapter extends
     public class ReviewsAdapterViewHolder extends RecyclerView.ViewHolder {
 
         TextView reviewTv;
-        TextView reviewTvExpandable;
+
 
 
         public ReviewsAdapterViewHolder(View itemView) {
             super(itemView);
             reviewTv = itemView.findViewById(R.id.review_tv);
-            reviewTvExpandable = itemView.findViewById(R.id.review_tv_expandable);
+
 
         }
     }

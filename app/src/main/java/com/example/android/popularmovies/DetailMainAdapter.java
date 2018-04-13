@@ -66,7 +66,7 @@ public class DetailMainAdapter extends
     }
 
     private void reviewView(ReviewViewHolder holder){
-        ReviewsAdapter adapter1 = new ReviewsAdapter(getReviews());
+        ReviewsAdapter adapter1 = new ReviewsAdapter(getReviews(),mContext);
         holder.recyclerView.setLayoutManager(new LinearLayoutManager(mContext,
                 LinearLayoutManager.HORIZONTAL, false));
         holder.recyclerView.setAdapter(adapter1);

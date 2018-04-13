@@ -52,7 +52,7 @@ public class DetailActivity extends AppCompatActivity
     final static String TAG = DetailActivity.class.getSimpleName();
     final static int DETAIL_ACTIVITY_LOADER_ID = 0;
     private static List<Object> objects = new ArrayList<>();
-    static String[] searchQueryUrlExtra;
+    private static String[] jsonResponse;
     public static Resources mResources;
 
 
@@ -146,15 +146,16 @@ public class DetailActivity extends AppCompatActivity
     public void onLoadFinished(Loader<String[]> loader, String[] data) {
         //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
 
+        jsonResponse = data;
 
             try {
-                String backDropPath = JsonUtils.getDetailImage(data[0]);
+                String backDropPath = JsonUtils.getDetailImage(jsonResponse[0]);
                 PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
 
-                review = JsonUtils.getReviewsMovie(data[1]);
+                review = JsonUtils.getReviewsMovie(jsonResponse[1]);
                 mMovie.setReviews(review);
 
-                video = JsonUtils.getVideosMovie(data[2]);
+                video = JsonUtils.getVideosMovie(jsonResponse[2]);
                 mMovie.setVideo(video);
 
             } catch (JSONException e) {
@@ -165,10 +166,11 @@ public class DetailActivity extends AppCompatActivity
         setMovieDetails(mMovie);
         mDetailMainAdapter = new DetailMainAdapter(this, getObject());
         mRecyclerView.setAdapter(mDetailMainAdapter);
-        //mDetailMainAdapter.notifyDataSetChanged();
+
+        mDetailMainAdapter.notifyDataSetChanged();
 
 
-        //mDetailMainAdapter.setObjectList(getObject());
+        mDetailMainAdapter.setObjectList(getObject());
 
 
     }
@@ -244,6 +246,12 @@ public class DetailActivity extends AppCompatActivity
         NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
         newFragment.setCancelable(false);
         newFragment.show(getFragmentManager(), "dialog");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putStringArray("jsonResponse",jsonResponse );
     }
 
     private List<Object> getObject(){

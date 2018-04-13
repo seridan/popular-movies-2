@@ -5,6 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+
+    <TextView
+        android:id="@+id/reviews_label"
+        android:text="@string/reviews_label"
+        style="@style/VideoAndReviewsLabelStyle"
+        />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/reviews_recyclerView"
         android:layout_width="match_parent"
