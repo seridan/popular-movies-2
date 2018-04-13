@@ -5,4 +5,5 @@
     <color name="colorAccent">#FFC107</color>
     <color name="colorBackGround">#424242</color>
     <color name="colorFont">#FFF8E1</color>
+    <color name="colorBackgroundVideoReviewItem">#212121</color>
 </resources>

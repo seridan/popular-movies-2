@@ -87,7 +87,6 @@ public class ReviewsAdapter extends
         TextView reviewTv;
 
 
-
         public ReviewsAdapterViewHolder(View itemView) {
             super(itemView);
             reviewTv = itemView.findViewById(R.id.review_tv);

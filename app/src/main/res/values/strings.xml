@@ -33,6 +33,7 @@
     <string name="vote_average_label">User rating:</string>
     <string name="release_date_label">Release date:</string>
     <string name="reviews_label">Reviews:</string>
+    <string name="videos_label">Videos:</string>
 
     <!-- Error messages-->
     <string name="detail_error_message">Data not available</string>

@@ -48,7 +48,7 @@ public class DetailMainAdapter extends
                 break;
 
                 default:
-                    view = inflater.inflate(R.layout.detail_videos_recycle_view,
+                    view = inflater.inflate(R.layout.detail_reviews_recycle_view,
                             parent, false);
                     holder = new VideoViewHolder(view);
                     break;
