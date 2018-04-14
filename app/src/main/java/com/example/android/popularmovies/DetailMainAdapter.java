@@ -73,7 +73,7 @@ public class DetailMainAdapter extends
     }
 
     private void videoView(VideoViewHolder holder){
-        VideosAdapter adapter2 = new VideosAdapter(getVideos());
+        VideosAdapter adapter2 = new VideosAdapter(getVideos(), mContext);
         holder.recyclerView.setLayoutManager(new LinearLayoutManager(mContext,
                 LinearLayoutManager.HORIZONTAL, false));
         holder.recyclerView.setAdapter(adapter2);

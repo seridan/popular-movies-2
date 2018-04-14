@@ -41,10 +41,9 @@ public class NetworkUtils {
     private static final String REVIEWS_PATH = "reviews";
     private static final String VIDEOS_PATH = "videos";
 
-    private static final String APPEND_TO_RESPONSE_QUERY = "append_to_response";
-    private static String appendToResponseParam = "videos,images,reviews";
-
-
+    private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/";
+    private static final String FUNCTION_PATH = "watch";
+    private final static String API_VIDEO_KEY_PARAM = "v";
 
 
     public static URL buildSortedUrl(String sortBy) {
@@ -63,24 +62,22 @@ public class NetworkUtils {
         return sortedUrl;
     }
 
-    //This method is to use with append to response query.
-    /*public static URL buildDetailsMovieUrl (int movieId){
-        Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()
-                .appendPath(Integer.toString(movieId))
-
-                .appendQueryParameter(API_KEY_PARAM, apiKey)
-                .appendQueryParameter(APPEND_TO_RESPONSE_QUERY, appendToResponseParam)
+    public static URL buildYouTubeUrl (String path){
+        Uri builtUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+                .appendPath(FUNCTION_PATH)
+                .appendQueryParameter(API_VIDEO_KEY_PARAM, path)
                 .build();
 
-        URL imageUrl = null;
+        URL youtubeUrl = null;
         try {
-            imageUrl = new URL(builtUri.toString());
+            youtubeUrl = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        Log.v(TAG, "Built deatails Moview URI " + imageUrl);
-        return imageUrl;
-    }*/
+        Log.v(TAG, "Built youtube URI " + youtubeUrl);
+        return youtubeUrl;
+    }
+
 
     public static URL buildReviewsMovieUrl (int movieId){
         Uri builtUri = Uri.parse(MOVIE_BACKDROP_BASE_URL).buildUpon()

@@ -1,21 +1,32 @@
 package com.example.android.popularmovies;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.utilities.NetworkUtils;
+
+import java.net.URL;
 import java.util.List;
 
 public class VideosAdapter extends
         RecyclerView.Adapter<VideosAdapter.VideosAdapterViewHolder>{
 
     private List<String> mVideosList;
+    private Context mContext;
 
-    public VideosAdapter (List<String> data){
+
+
+    public VideosAdapter (List<String> data, Context context){
         mVideosList = data;
+        mContext = context;
+
     }
 
     @Override
@@ -32,9 +43,18 @@ public class VideosAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(VideosAdapter.VideosAdapterViewHolder holder, int position) {
+    public void onBindViewHolder(VideosAdapter.VideosAdapterViewHolder holder, final int position) {
 
-        holder.videoTv.setText(mVideosList.get(position));
+        int numTrailer = position +1;
+        holder.videoTv.setText(mContext.getString(R.string.trailers_label) + " " + numTrailer);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String youtubePath = mVideosList.get(position);
+                openYouTubeTrailer(youtubePath, mContext);
+            }
+        });
 
     }
 
@@ -51,6 +71,15 @@ public class VideosAdapter extends
         public VideosAdapterViewHolder(View itemView) {
             super(itemView);
             videoTv = itemView.findViewById(R.id.video_tv);
+        }
+    }
+
+    private void openYouTubeTrailer(String path, Context context){
+        URL youtubePage = NetworkUtils.buildYouTubeUrl(path);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(youtubePage)));
+        if (intent.resolveActivity(context.getPackageManager()) != null){
+            context.startActivity(intent);
         }
     }
 }

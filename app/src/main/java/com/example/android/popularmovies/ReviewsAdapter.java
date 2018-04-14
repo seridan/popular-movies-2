@@ -46,21 +46,13 @@ public class ReviewsAdapter extends
     @Override
     public void onBindViewHolder(final ReviewsAdapter.ReviewsAdapterViewHolder holder, final int position) {
 
-        //final RecyclerViewHolder recyclerViewHolder = (RecyclerViewHolder) holder;
+
         holder.reviewTv.setText(mReviewsList.get(position));
-        //holder.reviewTv.setText(mReviewsList.get(position));
-        //holder.reviewTvExpandable.setText(mReviewsList.get(position));
-
-        /*final boolean isExpanded = position==mExpandedPosition;
-        holder.reviewTvExpandable.setVisibility(isExpanded?View.VISIBLE:View.GONE);
-
-        holder.itemView.setActivated(isExpanded);*/
         holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+
             @Override
             public void onClick(View view) {
-                //mExpandedPosition = isExpanded ? -1:holder.getAdapterPosition();
-                //TransitionManager.beginDelayedTransition((ViewGroup) view.getParent());
+
                 Intent intent = new Intent(mContext, ReviewViewActivity.class);
                 intent.putExtra(Intent.EXTRA_TEXT, mReviewsList.get(position));
                 mContext.startActivity(intent);
@@ -71,9 +63,6 @@ public class ReviewsAdapter extends
 
         });
 
-
-
-        //holder.reviewTv.setText(mReviewsList.get(position));
     }
 
     @Override
