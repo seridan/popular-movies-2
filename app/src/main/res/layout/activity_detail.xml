@@ -122,6 +122,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/videos_reviews_layout" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_add_movie"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_marginBottom="52dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:layout_constraintBottom_toTopOf="@+id/synopsis_tv_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.975"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.931"
+            app:rippleColor="@color/colorPrimary"
+            app:srcCompat="@drawable/ic_fab"
+            android:focusable="true" />
+
 
     </android.support.constraint.ConstraintLayout>
 

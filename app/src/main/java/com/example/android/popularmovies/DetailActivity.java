@@ -3,10 +3,12 @@ package com.example.android.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 
-
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -18,6 +20,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.android.popularmovies.data.FavoriteMovieContract;
+import com.example.android.popularmovies.data.FavoriteMovieDbHelper;
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
@@ -46,14 +51,16 @@ public class DetailActivity extends AppCompatActivity
     private static List<String> video;
     private RecyclerView mRecyclerView;
     private DetailMainAdapter mDetailMainAdapter;
+    private FloatingActionButton mFab;
 
     private Context mContext;
 
     final static String TAG = DetailActivity.class.getSimpleName();
     final static int DETAIL_ACTIVITY_LOADER_ID = 0;
-    private static List<Object> objects = new ArrayList<>();
+    private static List<Object> objects;
     private static String[] jsonResponse;
     public static Resources mResources;
+    private SQLiteDatabase mDb;
 
 
     @Override
@@ -62,19 +69,24 @@ public class DetailActivity extends AppCompatActivity
         setContentView(R.layout.activity_detail);
         mContext = this;
         mResources = getResources();
+        objects = new ArrayList<>();
+
+        FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
 
         mPosterIv = findViewById(R.id.poster_iv);
         mTitleLabel = findViewById(R.id.title_movie);
         mSynopsisTv = findViewById(R.id.synopsis_tv);
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
-
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         mRecyclerView = findViewById(R.id.detail_recycler_view);
-
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setHasFixedSize(true);
+        mDetailMainAdapter = new DetailMainAdapter(this, objects);
 
+        mRecyclerView.setAdapter(mDetailMainAdapter);
 
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity != null) {
@@ -85,6 +97,14 @@ public class DetailActivity extends AppCompatActivity
         LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
         Bundle bundleForLoader = null;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
+
+        mFab = findViewById(R.id.fab_add_movie);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
 
     }
 
@@ -164,20 +184,12 @@ public class DetailActivity extends AppCompatActivity
 
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         setMovieDetails(mMovie);
-        mDetailMainAdapter = new DetailMainAdapter(this, getObject());
-        mRecyclerView.setAdapter(mDetailMainAdapter);
-
-        mDetailMainAdapter.notifyDataSetChanged();
-
-
         mDetailMainAdapter.setObjectList(getObject());
-
 
     }
 
     @Override
     public void onLoaderReset(Loader<String[]> loader) {
-
     }
 
     @Override
@@ -190,27 +202,6 @@ public class DetailActivity extends AppCompatActivity
             getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_LOADER_ID, null, this);
         }
     }
-
-    /**
-     * This method load the image that will shown in the detailActivity screen through an AsyncTask
-     * loader. Obtains the url to get the image JSON of the movie selected.
-     * @param id int of the id of selected movie.
-     */
-   /* private void loadPosterImage (int id){
-        // Obtains the url to get the image JSON of the movie selected.
-        URL posterUrl = NetworkUtils.buildBackdropImageUrl(id);
-        Bundle queryBundle = new Bundle();
-        queryBundle.putString(SEARCH_QUERY_URL_EXTRA, posterUrl.toString());
-        //Create the LoaderManager an check if is initialized or not.
-        LoaderManager loaderManager = getSupportLoaderManager();
-        Loader<Object> moviesSearchLoader = loaderManager.getLoader(DETAIL_ACTIVITY_LOADER);
-
-        if (moviesSearchLoader == null){
-            loaderManager.initLoader(DETAIL_ACTIVITY_LOADER, queryBundle,this);
-        }else{
-            loaderManager.restartLoader(DETAIL_ACTIVITY_LOADER, queryBundle, this);
-        }
-    }*/
 
     /**
      * This method check if there is value to set in the TextxView. If not will set the error message.
@@ -279,6 +270,17 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
+    private Cursor getAllMovies(){
+        return mDb.query(
+                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
 
+    }
 
 }

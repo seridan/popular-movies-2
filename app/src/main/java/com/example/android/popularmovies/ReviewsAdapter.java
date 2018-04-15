@@ -44,17 +44,17 @@ public class ReviewsAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(final ReviewsAdapter.ReviewsAdapterViewHolder holder, final int position) {
+    public void onBindViewHolder(final ReviewsAdapter.ReviewsAdapterViewHolder holder, int position) {
 
 
         holder.reviewTv.setText(mReviewsList.get(position));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
-
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
 
                 Intent intent = new Intent(mContext, ReviewViewActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, mReviewsList.get(position));
+                intent.putExtra(Intent.EXTRA_TEXT, mReviewsList.get(holder.getAdapterPosition()));
                 mContext.startActivity(intent);
 
                 }
