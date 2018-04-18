@@ -84,7 +84,7 @@ public class DetailActivity extends AppCompatActivity
         mRecyclerView = findViewById(R.id.detail_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setHasFixedSize(true);
-        mDetailMainAdapter = new DetailMainAdapter(this, objects);
+        mDetailMainAdapter = new DetailMainAdapter(mContext, objects);
 
         mRecyclerView.setAdapter(mDetailMainAdapter);
 

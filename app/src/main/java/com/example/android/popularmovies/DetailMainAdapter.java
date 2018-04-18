@@ -18,8 +18,8 @@ public class DetailMainAdapter extends
 
     private Context mContext;
     private List<Object> mItems;
-    private final int REVIEWS = 1;
-    private final int VIDEOS = 2;
+    private final int REVIEWS = 2;
+    private final int VIDEOS = 1;
 
     public DetailMainAdapter(Context context, List<Object> items) {
         mContext = context;
