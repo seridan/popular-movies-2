@@ -1,10 +1,12 @@
 package com.example.android.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 
 
@@ -20,15 +22,18 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.android.popularmovies.data.FavoriteMovieContract;
-import com.example.android.popularmovies.data.FavoriteMovieDbHelper;
+import com.example.android.popularmovies.data.PopularMoviesContract;
+import com.example.android.popularmovies.data.PopularMoviesDbHelper;
 import com.example.android.popularmovies.model.Movie;
 import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.NoConnectionDialogFragment;
 import com.example.android.popularmovies.utilities.PicassoUtils;
+import com.facebook.stetho.Stetho;
+
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
@@ -61,6 +66,7 @@ public class DetailActivity extends AppCompatActivity
     private static String[] jsonResponse;
     public static Resources mResources;
     private SQLiteDatabase mDb;
+    private static String backDropPath;
 
 
     @Override
@@ -71,7 +77,7 @@ public class DetailActivity extends AppCompatActivity
         mResources = getResources();
         objects = new ArrayList<>();
 
-        FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
+        PopularMoviesDbHelper dbHelper = new PopularMoviesDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
 
         mPosterIv = findViewById(R.id.poster_iv);
@@ -89,22 +95,19 @@ public class DetailActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mDetailMainAdapter);
 
         Intent intentThatStartedThisActivity = getIntent();
+
         if (intentThatStartedThisActivity != null) {
+
             mMovie = intentThatStartedThisActivity.getParcelableExtra("movieObject");
 
         }
+
         int loaderId = DETAIL_ACTIVITY_LOADER_ID;
         LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
         Bundle bundleForLoader = null;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
 
         mFab = findViewById(R.id.fab_add_movie);
-        mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
 
     }
 
@@ -114,15 +117,16 @@ public class DetailActivity extends AppCompatActivity
          * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
          */
         if (CheckIsOnline.checkConnection(this)) {
-            return  new AsyncTaskLoader<String[]>(this) {
+            return new AsyncTaskLoader<String[]>(this) {
 
                 String[] mJsonStrings;
+
                 @Override
                 protected void onStartLoading() {
 
-                    if (mJsonStrings != null){
+                    if (mJsonStrings != null) {
                         deliverResult(mJsonStrings);
-                    }else {
+                    } else {
                         mLoadingIndicator.setVisibility(View.VISIBLE);
                         forceLoad();
                     }
@@ -142,7 +146,7 @@ public class DetailActivity extends AppCompatActivity
                         jsons[0] = NetworkUtils.getResponseFromHttpUrl(backDropImageRequestUrl);
                         jsons[1] = NetworkUtils.getResponseFromHttpUrl(reviewRequestUrl);
                         jsons[2] = NetworkUtils.getResponseFromHttpUrl(videoRequestUrl);
-                        return  jsons;
+                        return jsons;
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -156,7 +160,7 @@ public class DetailActivity extends AppCompatActivity
                     super.deliverResult(data);
                 }
             };
-        }else {
+        } else {
             showDialog();
         }
         return null;
@@ -168,19 +172,19 @@ public class DetailActivity extends AppCompatActivity
 
         jsonResponse = data;
 
-            try {
-                String backDropPath = JsonUtils.getDetailImage(jsonResponse[0]);
-                PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
+        try {
+            backDropPath = JsonUtils.getDetailImage(jsonResponse[0]);
+            PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
 
-                review = JsonUtils.getReviewsMovie(jsonResponse[1]);
-                mMovie.setReviews(review);
+            review = JsonUtils.getReviewsMovie(jsonResponse[1]);
+            mMovie.setReviews(review);
 
-                video = JsonUtils.getVideosMovie(jsonResponse[2]);
-                mMovie.setVideo(video);
+            video = JsonUtils.getVideosMovie(jsonResponse[2]);
+            mMovie.setVideo(video);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         setMovieDetails(mMovie);
@@ -219,13 +223,14 @@ public class DetailActivity extends AppCompatActivity
 
     /**
      * Populate the movie data in views
+     *
      * @param movie the movie object selected to show the details
      */
     private void setMovieDetails(Movie movie) {
 
-        checkAndSetTex(movie.getOriginalTitle(),mTitleLabel);
-        checkAndSetTex(movie.getOverview(),mSynopsisTv);
-        checkAndSetTex(String.valueOf(movie.getVote_average()),mVoteAverage);
+        checkAndSetTex(movie.getOriginalTitle(), mTitleLabel);
+        checkAndSetTex(movie.getOverview(), mSynopsisTv);
+        checkAndSetTex(String.valueOf(movie.getVote_average()), mVoteAverage);
         checkAndSetTex(String.valueOf(movie.getReleaseDate()), mReleaseDate);
 
     }
@@ -233,7 +238,7 @@ public class DetailActivity extends AppCompatActivity
     /**
      * This method creates a an alertDialog from NoConnectionDialogFragment class.
      */
-    private void showDialog(){
+    private void showDialog() {
         NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
         newFragment.setCancelable(false);
         newFragment.show(getFragmentManager(), "dialog");
@@ -242,45 +247,57 @@ public class DetailActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putStringArray("jsonResponse",jsonResponse );
+        outState.putStringArray("jsonResponse", jsonResponse);
     }
 
-    private List<Object> getObject(){
+    private List<Object> getObject() {
         objects.add(getReviews().get(0));
         objects.add(getVideos().get(0));
         return objects;
     }
 
-    public static List<String> getReviews(){
+    public static List<String> getReviews() {
 
         if (review.size() > 0) {
             return review;
-        }else {
+        } else {
             review.add(mResources.getString(R.string.no_reviews_error));
             return review;
         }
     }
 
-    public static List<String> getVideos(){
+    public static List<String> getVideos() {
         if (video.size() > 0) {
             return video;
-        }else {
+        } else {
             video.add(mResources.getString(R.string.no_videos_error));
             return video;
         }
     }
 
-    private Cursor getAllMovies(){
-        return mDb.query(
-                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+    public void onClickAddMovie(View view) {
+        if (mMovie == null) {
+            return;
+        }
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE, mMovie.getOriginalTitle());
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_SYNOPSIS, mMovie.getOverview());
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING, mMovie.getVote_average());
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, mMovie.getReleaseDate());
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_BACKDROP_PATH, backDropPath);
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS, review.get(0));
+
+
+        Uri uri = getContentResolver().insert(PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
+
+        Stetho.initializeWithDefaults(this);
+
+        if (uri != null) {
+            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+        }
 
     }
-
 }
