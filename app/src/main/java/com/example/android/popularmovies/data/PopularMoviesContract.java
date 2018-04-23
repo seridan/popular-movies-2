@@ -37,8 +37,12 @@ public class PopularMoviesContract {
         //Column backdrop path;
         public static final String COLUMN_BACKDROP_PATH = "backdropPath";
 
+        //Column backdrop path;
+        public static final String COLUMN_POSTER_PATH = "posterPath";
+
         //Column reviews;
         public static final String COLUMN_REVIEWS = "movieReview";
+
 
     }
 }

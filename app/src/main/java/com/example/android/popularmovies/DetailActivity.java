@@ -288,6 +288,7 @@ public class DetailActivity extends AppCompatActivity
         contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING, mMovie.getVote_average());
         contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, mMovie.getReleaseDate());
         contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_BACKDROP_PATH, backDropPath);
+        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH, mMovie.getPosterPath());
         contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS, review.get(0));
 
 
