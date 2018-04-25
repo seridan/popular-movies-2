@@ -3,9 +3,11 @@ package com.example.android.popularmovies;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -13,11 +15,13 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -40,8 +44,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetailActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<String[]> {
+public class DetailActivity extends AppCompatActivity {
 
     private ImageView mPosterIv;
     private TextView mTitleLabel;
@@ -57,11 +60,13 @@ public class DetailActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
     private DetailMainAdapter mDetailMainAdapter;
     private FloatingActionButton mFab;
+    private static boolean isFavorite;
 
     private Context mContext;
 
     final static String TAG = DetailActivity.class.getSimpleName();
-    final static int DETAIL_ACTIVITY_LOADER_ID = 0;
+    final static int DETAIL_ACTIVITY_NETWORK_LOADER_ID = 0;
+    final static int DETAIL_ACTIVITY_CURSOR_LOADER_ID = 100;
     private static List<Object> objects;
     private static String[] jsonResponse;
     public static Resources mResources;
@@ -77,6 +82,7 @@ public class DetailActivity extends AppCompatActivity
         mResources = getResources();
         objects = new ArrayList<>();
 
+
         PopularMoviesDbHelper dbHelper = new PopularMoviesDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
 
@@ -86,12 +92,12 @@ public class DetailActivity extends AppCompatActivity
         mVoteAverage = findViewById(R.id.vote_average_tv);
         mReleaseDate = findViewById(R.id.release_date_tv);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+        mFab = findViewById(R.id.fab_add_movie);
 
         mRecyclerView = findViewById(R.id.detail_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setHasFixedSize(true);
         mDetailMainAdapter = new DetailMainAdapter(mContext, objects);
-
         mRecyclerView.setAdapter(mDetailMainAdapter);
 
         Intent intentThatStartedThisActivity = getIntent();
@@ -102,108 +108,39 @@ public class DetailActivity extends AppCompatActivity
 
         }
 
-        int loaderId = DETAIL_ACTIVITY_LOADER_ID;
-        LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
-        Bundle bundleForLoader = null;
-        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbacks);
+        initLoaders();
 
-        mFab = findViewById(R.id.fab_add_movie);
+    }
 
+    private void initLoaders() {
+        getSupportLoaderManager().initLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
+        getSupportLoaderManager().initLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
     }
 
     @Override
-    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
-        /**
-         * Check if is connected to internet, if not will shown an AlertDialog to report the issue to the user
-         */
-        if (CheckIsOnline.checkConnection(this)) {
-            return new AsyncTaskLoader<String[]>(this) {
+    protected void onResume() {
+        super.onResume();
+        // re-queries for all favorites movies
 
-                String[] mJsonStrings;
+        getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
 
-                @Override
-                protected void onStartLoading() {
 
-                    if (mJsonStrings != null) {
-                        deliverResult(mJsonStrings);
-                    } else {
-                        mLoadingIndicator.setVisibility(View.VISIBLE);
-                        forceLoad();
-                    }
-                }
-
-                @Override
-                public String[] loadInBackground() {
-
-                    String[] jsons = new String[3];
-
-                    URL backDropImageRequestUrl = NetworkUtils.buildBackdropImageUrl(mMovie.getId());
-                    URL reviewRequestUrl = NetworkUtils.buildReviewsMovieUrl(mMovie.getId());
-                    URL videoRequestUrl = NetworkUtils.buildVideosMovieUrl(mMovie.getId());
-
-                    try {
-
-                        jsons[0] = NetworkUtils.getResponseFromHttpUrl(backDropImageRequestUrl);
-                        jsons[1] = NetworkUtils.getResponseFromHttpUrl(reviewRequestUrl);
-                        jsons[2] = NetworkUtils.getResponseFromHttpUrl(videoRequestUrl);
-                        return jsons;
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-
-                @Override
-                public void deliverResult(String[] data) {
-                    mJsonStrings = data;
-                    super.deliverResult(data);
-                }
-            };
-        } else {
-            showDialog();
-        }
-        return null;
+        getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
     }
 
-    @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] data) {
-        //Check data is null, if it is them get the path of the main movie image and pass to PicassoUtils
 
-        jsonResponse = data;
-
-        try {
-            backDropPath = JsonUtils.getDetailImage(jsonResponse[0]);
-            PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
-
-            review = JsonUtils.getReviewsMovie(jsonResponse[1]);
-            mMovie.setReviews(review);
-
-            video = JsonUtils.getVideosMovie(jsonResponse[2]);
-            mMovie.setVideo(video);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-        setMovieDetails(mMovie);
-        mDetailMainAdapter.setObjectList(getObject());
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<String[]> loader) {
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
         //Check if a loader is not null.
-        Loader loader = getSupportLoaderManager().getLoader(DETAIL_ACTIVITY_LOADER_ID);
+        Loader loader = getSupportLoaderManager().getLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID);
+        Loader loaderCursor = getSupportLoaderManager().getLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID);
         //Check if a loader is already initialized then restart, if not then we initialize it.
         if (loader != null) {
-            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_LOADER_ID, null, this);
+            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
+        } else if (loaderCursor != null) {
+            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
         }
     }
 
@@ -280,25 +217,204 @@ public class DetailActivity extends AppCompatActivity
             return;
         }
 
-        ContentValues contentValues = new ContentValues();
+        if (isFavorite){
+            int id = mMovie.getId();
+            String stringId = Integer.toString(id);
+            Uri uri = PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI;
+            uri = uri.buildUpon().appendPath(stringId).build();
+            getContentResolver().delete(uri, null, null);
+            mFab.setImageResource(R.drawable.ic_fab);
+            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
+            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
 
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE, mMovie.getOriginalTitle());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_SYNOPSIS, mMovie.getOverview());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING, mMovie.getVote_average());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, mMovie.getReleaseDate());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_BACKDROP_PATH, backDropPath);
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH, mMovie.getPosterPath());
-        contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS, review.get(0));
+
+        }else {
+
+            ContentValues contentValues = new ContentValues();
+
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE, mMovie.getOriginalTitle());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_SYNOPSIS, mMovie.getOverview());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING, mMovie.getVote_average());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, mMovie.getReleaseDate());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_BACKDROP_PATH, backDropPath);
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH, mMovie.getPosterPath());
+            contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS, review.get(0));
 
 
-        Uri uri = getContentResolver().insert(PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
+            Uri uri = getContentResolver().insert(PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
 
-        Stetho.initializeWithDefaults(this);
+            Stetho.initializeWithDefaults(this);
 
-        if (uri != null) {
-            Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+            if (uri != null) {
+                Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+                mFab.setImageResource(R.drawable.ic_delete);
+                getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
+                getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
+            }
+
         }
 
+    }
+
+    private class LoadNetworkData implements LoaderManager.LoaderCallbacks<String[]> {
+
+        Context context;
+
+        public LoadNetworkData(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public Loader<String[]> onCreateLoader(int id, Bundle args) {
+            return new AsyncTaskLoader<String[]>(context) {
+
+                String[] mJsonStrings;
+
+                @Override
+                protected void onStartLoading() {
+
+                    if (mJsonStrings != null) {
+                        deliverResult(mJsonStrings);
+                    } else {
+                        mLoadingIndicator.setVisibility(View.VISIBLE);
+                        forceLoad();
+                    }
+                }
+
+                @Override
+                public String[] loadInBackground() {
+
+                    String[] jsons = new String[3];
+
+                    URL backDropImageRequestUrl = NetworkUtils.buildBackdropImageUrl(mMovie.getId());
+                    URL reviewRequestUrl = NetworkUtils.buildReviewsMovieUrl(mMovie.getId());
+                    URL videoRequestUrl = NetworkUtils.buildVideosMovieUrl(mMovie.getId());
+
+                    try {
+
+                        jsons[0] = NetworkUtils.getResponseFromHttpUrl(backDropImageRequestUrl);
+                        jsons[1] = NetworkUtils.getResponseFromHttpUrl(reviewRequestUrl);
+                        jsons[2] = NetworkUtils.getResponseFromHttpUrl(videoRequestUrl);
+                        return jsons;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                @Override
+                public void deliverResult(String[] data) {
+                    mJsonStrings = data;
+                    super.deliverResult(data);
+                }
+            };
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<String[]> loader, String[] data) {
+
+            jsonResponse = data;
+
+            try {
+                backDropPath = JsonUtils.getDetailImage(jsonResponse[0]);
+                PicassoUtils.getImageFromUrl(mContext, backDropPath, mPosterIv);
+
+                review = JsonUtils.getReviewsMovie(jsonResponse[1]);
+                mMovie.setReviews(review);
+
+                video = JsonUtils.getVideosMovie(jsonResponse[2]);
+                mMovie.setVideo(video);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            setMovieDetails(mMovie);
+            mDetailMainAdapter.setObjectList(getObject());
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<String[]> loader) {
+
+        }
+    }
+
+    private class LoadCursor implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        Context context;
+
+        public LoadCursor(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            return new AsyncTaskLoader<Cursor>(context) {
+                Cursor mMovieCursor = null;
+
+                @Override
+                protected void onStartLoading() {
+                    if (mMovieCursor != null) {
+                        deliverResult(mMovieCursor);
+                    } else {
+                        forceLoad();
+                    }
+                }
+
+                @Override
+                public Cursor loadInBackground() {
+                    try {
+                        return getContentResolver().query(PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI,
+                                null,
+                                null,
+                                null,
+                                PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE);
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to asynchronously load data from database.");
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+                @Override
+                public void deliverResult(Cursor data) {
+                    mMovieCursor = data;
+                    super.deliverResult(data);
+                }
+
+            };
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+            isFavorite = false;
+            int currentMovieId = mMovie.getId();
+
+
+            while (data.moveToNext()){
+
+                int idMovie = data.getInt(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID));
+                if (idMovie == currentMovieId){
+                    isFavorite = true;
+                    mFab.setImageResource(R.drawable.ic_delete);
+
+                }
+            }
+
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
     }
 }

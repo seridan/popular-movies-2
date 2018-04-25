@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
 
+
         initLoaders();
 
     }
@@ -96,11 +98,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListItemClick(Movie movie) {
-        Context context = this;
-        Class destinationClass = DetailActivity.class;
-        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra(MOVIE_OBJECT, movie);
-        startActivity(intentToStartDetailActivity);
+        if (!CheckIsOnline.checkConnection(MainActivity.this) && !checkIsFavorites()) {
+            Toast.makeText(getBaseContext(), "no tienes conexion", Toast.LENGTH_LONG).show();
+        }else{
+            Context context = this;
+            Class destinationClass = DetailActivity.class;
+            Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+            intentToStartDetailActivity.putExtra(MOVIE_OBJECT, movie);
+            startActivity(intentToStartDetailActivity);
+
+        }
+
+
     }
 
     private void initLoaders(){
@@ -111,6 +120,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(getBaseContext(), "has seleccionado favoritos", Toast.LENGTH_LONG).show();
            getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
        }else {
+            showDialog();
             Toast.makeText(getBaseContext(), "no tienes conexion", Toast.LENGTH_LONG).show();
         }
 
@@ -139,10 +149,10 @@ public class MainActivity extends AppCompatActivity
             //Check if a loader is already initialized then restart, if not then we initialize it.
             if (loader != null) {
                 if (PREFERENCES_HAVE_BEEN_UPDATED) {
-                    getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this)).forceLoad();
+                    getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
                     PREFERENCES_HAVE_BEEN_UPDATED = false;
                 } else
-                    getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this)).forceLoad();
+                    getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
             }
         } else {
             //Check if a loader is not null.
@@ -195,9 +205,11 @@ public class MainActivity extends AppCompatActivity
      * This method creates a an alertDialog from NoConnectionDialogFragment class.
      */
     private void showDialog(){
-        NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
-        newFragment.setCancelable(false);
-        newFragment.show(getFragmentManager(), "dialog");
+
+            NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
+            newFragment.setCancelable(false);
+            newFragment.show(getFragmentManager(), "dialog");
+
     }
 
 
@@ -212,7 +224,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             return new AsyncTaskLoader<Cursor>(context){
-                Cursor mMovieCursor = null;
+                Cursor mMovieCursor;
 
                 @Override
                 protected void onStartLoading() {
@@ -252,30 +264,45 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
-          List<Movie> dataBaseMovieList = new ArrayList<>();
-            
-            while (data.moveToNext()) {
+            List<Movie> dataBaseMovieList = new ArrayList<>();
 
-                int idMovie = data.getInt(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID));
-                String originalTittle = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE));
-                String overView = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_SYNOPSIS));
-                String posterPath = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH));
-                String releaseDate = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE));
-                Double voteAverage = data.getDouble(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING));
-                List<String> review = Collections.singletonList(data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS)));
 
-                Movie mMovie = new Movie(idMovie, originalTittle, overView, posterPath, releaseDate, voteAverage, review);
+            if (data == null || data.getCount() == 0 ) {
+                mPopularMoviesAdapter.setMovieList(dataBaseMovieList);
 
-                dataBaseMovieList.add(mMovie);
 
+            }else {
+                while (data.moveToNext()) {
+
+                    int idMovie = data.getInt(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID));
+                    String originalTittle = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_TITTLE));
+                    String overView = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_SYNOPSIS));
+                    String posterPath = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH));
+                    String releaseDate = data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE));
+                    Double voteAverage = data.getDouble(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING));
+                    List<String> review = Collections.singletonList(data.getString(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS)));
+
+                    Movie mMovie = new Movie(idMovie, originalTittle, overView, posterPath, releaseDate, voteAverage, review);
+
+                    dataBaseMovieList.add(mMovie);
+
+
+
+
+                }
                 mPopularMoviesAdapter.setMovieList(dataBaseMovieList);
 
             }
+
+
 
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
+
+
+
 
         }
     }

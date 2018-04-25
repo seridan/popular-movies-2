@@ -62,6 +62,22 @@ public class PopularMoviesContentProvider extends ContentProvider{
                         sortOrder);
                 break;
 
+            case MOVIES_WITH_ID:
+
+                String id = uri.getPathSegments().get(1);
+
+                String mSelection = "_id=?";
+                String[] mSelectionArgs = new String[]{id};
+
+                retCursor = db.query(TABLE_NAME,
+                        projection,
+                        mSelection,
+                        mSelectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+
                 default:
                     throw new UnsupportedOperationException("Unknow uri: " + uri);
         }
@@ -121,7 +137,7 @@ public class PopularMoviesContentProvider extends ContentProvider{
 
                 String id = uri.getPathSegments().get(1);
 
-                String mSelection = "_id=?";
+                String mSelection = "movieId=?";
                 String[] mSelectionArgs = new String[]{id};
 
                 deletedMovies = db.delete(TABLE_NAME,
@@ -133,6 +149,8 @@ public class PopularMoviesContentProvider extends ContentProvider{
                 default:
                     throw new UnsupportedOperationException("Unknow uri: " + uri);
         }
+
+        getContext().getContentResolver().notifyChange(uri, null);
 
         return deletedMovies;
     }
