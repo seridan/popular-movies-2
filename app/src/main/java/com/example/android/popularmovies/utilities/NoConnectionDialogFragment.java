@@ -5,8 +5,10 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.PreferenceManager;
 
 import com.example.android.popularmovies.R;
 
@@ -28,14 +30,16 @@ public class NoConnectionDialogFragment extends DialogFragment{
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(R.string.error_connection_message_main_activity)
-                .setTitle(R.string.error_connection_tittle);
-        builder.setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
+
+        builder
+                .setMessage(R.string.error_connection_message_main_activity)
+                .setTitle(R.string.error_connection_tittle)
+                .setPositiveButton(R.string.retry_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
                 dialogInterface.dismiss();//avoid the window leaks on finish the activity.
-                ((Activity) mContext).finish();
+
             }
         });
         return builder.create();

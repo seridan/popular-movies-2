@@ -33,8 +33,11 @@ public class VideosAdapter extends
     public VideosAdapter.VideosAdapterViewHolder
     onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
+
         int layoutIdForListItem = R.layout.video_list_item;
+
         LayoutInflater inflater = LayoutInflater.from(context);
+
         boolean shouldAttachToParentImmediately = false;
 
         View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
@@ -46,6 +49,7 @@ public class VideosAdapter extends
     public void onBindViewHolder(VideosAdapter.VideosAdapterViewHolder holder, final int position) {
 
         int numTrailer = position +1;
+
         holder.videoTv.setText(mContext.getString(R.string.trailers_label) + " " + numTrailer);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

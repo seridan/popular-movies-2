@@ -1,13 +1,10 @@
 package com.example.android.popularmovies;
 
-import android.app.Activity;
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +18,6 @@ public class ReviewsAdapter extends
     private List<String> mReviewsList;
     private Context mContext;
 
-    //ViewGroup recycler = (ViewGroup)(R.layout.detail_reviews_recycle_view);
-    //private Context mContext;
 
     public ReviewsAdapter (List<String> data, Context context){
         mReviewsList = data;
@@ -33,8 +28,10 @@ public class ReviewsAdapter extends
     public ReviewsAdapter.ReviewsAdapterViewHolder
     onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
+
         int layoutIdForListItem = R.layout.review_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
+
         boolean shouldAttachToParentImmediately = false;
 
         View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
@@ -45,7 +42,6 @@ public class ReviewsAdapter extends
 
     @Override
     public void onBindViewHolder(final ReviewsAdapter.ReviewsAdapterViewHolder holder, int position) {
-
 
         holder.reviewTv.setText(mReviewsList.get(position));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -75,11 +71,9 @@ public class ReviewsAdapter extends
 
         TextView reviewTv;
 
-
         public ReviewsAdapterViewHolder(View itemView) {
             super(itemView);
             reviewTv = itemView.findViewById(R.id.review_tv);
-
 
         }
     }

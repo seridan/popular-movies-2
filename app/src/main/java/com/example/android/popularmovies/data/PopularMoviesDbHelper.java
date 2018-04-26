@@ -9,7 +9,6 @@ import com.example.android.popularmovies.DetailActivity;
 
 public class PopularMoviesDbHelper extends SQLiteOpenHelper {
 
-    final static String TAG = PopularMoviesDbHelper.class.getSimpleName();
 
     //data base file name;
     public static final String DATABASE_NAME = "favoriteMovie.db";
@@ -34,6 +33,7 @@ public class PopularMoviesDbHelper extends SQLiteOpenHelper {
                 PopularMoviesContract.FavoriteMovieEntry.COLUMN_USER_RATING + " DOUBLE NOT NULL, " +
                 PopularMoviesContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 PopularMoviesContract.FavoriteMovieEntry.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, " +
+                PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
                 PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS + " TEXT NOT NULL);";
 
         //Execute the query passing the string query.
