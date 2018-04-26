@@ -43,6 +43,5 @@ public class PopularMoviesContract {
         //Column reviews;
         public static final String COLUMN_REVIEWS = "movieReview";
 
-
     }
 }

@@ -16,6 +16,7 @@ public class ReviewViewActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review_view);
+
         ActionBar actionBar = this.getSupportActionBar();
 
         if (actionBar != null){
@@ -27,6 +28,7 @@ public class ReviewViewActivity extends AppCompatActivity {
 
     private void initView() {
         tvSelectedReview = findViewById(R.id.tv_selected_review);
+
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.hasExtra(Intent.EXTRA_TEXT)) {
             String review = getIntent().getStringExtra(Intent.EXTRA_TEXT);

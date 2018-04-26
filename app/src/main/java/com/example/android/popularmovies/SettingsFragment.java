@@ -20,11 +20,15 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         if (preference instanceof ListPreference){
             ListPreference listPreference = (ListPreference) preference;
+
             int prefIndex = listPreference.findIndexOfValue(stringValue);
+
             if (prefIndex >= 0) {
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
             }
+
         }else {
+
             preference.setSummary(stringValue);
         }
     }
@@ -39,6 +43,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
         for (int i = 0; i < count; i++){
             Preference p = prefScreen.getPreference(i);
+
             if (!(p instanceof CheckBoxPreference)){
                 String value = sharedPreferences.getString(p.getKey(), "");
                 setPreferenceSummary(p, value);
@@ -49,7 +54,9 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Preference preference = findPreference(key);
+
         if (null != preference) {
+
             if (!(preference instanceof CheckBoxPreference)){
                 String value = sharedPreferences.getString(preference.getKey(), "");
                 setPreferenceSummary(preference, value);
@@ -60,6 +67,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         getPreferenceScreen().getSharedPreferences()
                 .registerOnSharedPreferenceChangeListener(this);
     }
@@ -67,6 +75,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
     }

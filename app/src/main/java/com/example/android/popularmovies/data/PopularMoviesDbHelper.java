@@ -9,7 +9,6 @@ import com.example.android.popularmovies.DetailActivity;
 
 public class PopularMoviesDbHelper extends SQLiteOpenHelper {
 
-    final static String TAG = PopularMoviesDbHelper.class.getSimpleName();
 
     //data base file name;
     public static final String DATABASE_NAME = "favoriteMovie.db";

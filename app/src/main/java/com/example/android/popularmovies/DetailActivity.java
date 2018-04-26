@@ -3,41 +3,35 @@ package com.example.android.popularmovies;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-
-
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.android.popularmovies.data.PopularMoviesContract;
 import com.example.android.popularmovies.data.PopularMoviesDbHelper;
 import com.example.android.popularmovies.model.Movie;
-import com.example.android.popularmovies.utilities.CheckIsOnline;
 import com.example.android.popularmovies.utilities.JsonUtils;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-import com.example.android.popularmovies.utilities.NoConnectionDialogFragment;
 import com.example.android.popularmovies.utilities.PicassoUtils;
 import com.facebook.stetho.Stetho;
-
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
@@ -51,8 +45,6 @@ public class DetailActivity extends AppCompatActivity {
     private TextView mSynopsisTv;
     private TextView mVoteAverage;
     private TextView mReleaseDate;
-    private TextView mReviewTv;
-    private TextView mVideoTv;
     private ProgressBar mLoadingIndicator;
     private static Movie mMovie;
     private static List<String> review;
@@ -74,6 +66,7 @@ public class DetailActivity extends AppCompatActivity {
     private static String backDropPath;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +74,6 @@ public class DetailActivity extends AppCompatActivity {
         mContext = this;
         mResources = getResources();
         objects = new ArrayList<>();
-
 
         PopularMoviesDbHelper dbHelper = new PopularMoviesDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
@@ -124,11 +116,8 @@ public class DetailActivity extends AppCompatActivity {
 
         getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
 
-
         getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
     }
-
-
 
     @Override
     protected void onStart() {
@@ -172,15 +161,6 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * This method creates a an alertDialog from NoConnectionDialogFragment class.
-     */
-    private void showDialog() {
-        NoConnectionDialogFragment newFragment = new NoConnectionDialogFragment();
-        newFragment.setCancelable(false);
-        newFragment.show(getFragmentManager(), "dialog");
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -219,14 +199,27 @@ public class DetailActivity extends AppCompatActivity {
 
         if (isFavorite){
             int id = mMovie.getId();
+
             String stringId = Integer.toString(id);
+
             Uri uri = PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI;
             uri = uri.buildUpon().appendPath(stringId).build();
-            getContentResolver().delete(uri, null, null);
-            mFab.setImageResource(R.drawable.ic_fab);
-            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
-            getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
 
+            int removed = getContentResolver().delete(uri, null, null);
+
+            if (removed > 0 ) {
+
+                mFab.setImageResource(R.drawable.ic_fab);
+
+                Toast.makeText(getBaseContext(), R.string.delete_movie_message, Toast.LENGTH_SHORT).show();
+
+                getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
+                getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
+
+            }else {
+
+                throw new UnsupportedOperationException("Failed to delete" + mMovie.getOriginalTitle());
+            }
 
         }else {
 
@@ -241,13 +234,12 @@ public class DetailActivity extends AppCompatActivity {
             contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_POSTER_PATH, mMovie.getPosterPath());
             contentValues.put(PopularMoviesContract.FavoriteMovieEntry.COLUMN_REVIEWS, review.get(0));
 
-
             Uri uri = getContentResolver().insert(PopularMoviesContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
 
             Stetho.initializeWithDefaults(this);
 
             if (uri != null) {
-                Toast.makeText(getBaseContext(), uri.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), R.string.add_movie_message, Toast.LENGTH_SHORT).show();
                 mFab.setImageResource(R.drawable.ic_delete);
                 getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_CURSOR_LOADER_ID, null, new LoadCursor(DetailActivity.this));
                 getSupportLoaderManager().restartLoader(DETAIL_ACTIVITY_NETWORK_LOADER_ID, null, new LoadNetworkData(DetailActivity.this));
@@ -256,6 +248,44 @@ public class DetailActivity extends AppCompatActivity {
         }
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.detail_menu, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int menuOptionsThatWasSelected = item.getItemId();
+
+        String tittle = mMovie.getOriginalTitle() + " Trailer";
+
+        String videoToShare = NetworkUtils.buildYouTubeUrl(mMovie.getVideos().get(0)).toString();
+
+        String mimType = "text/*";
+
+        if ((videoToShare != null) && (videoToShare != "")) {
+
+            if (menuOptionsThatWasSelected == R.id.menu_item_share) {
+
+                ShareCompat.IntentBuilder
+                        .from(this)
+                        .setType(mimType)
+                        .setChooserTitle(tittle)
+                        .setText(videoToShare)
+                        .startChooser();
+
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+
+        return false;
+    }
+
 
     private class LoadNetworkData implements LoaderManager.LoaderCallbacks<String[]> {
 
@@ -398,7 +428,6 @@ public class DetailActivity extends AppCompatActivity {
             isFavorite = false;
             int currentMovieId = mMovie.getId();
 
-
             while (data.moveToNext()){
 
                 int idMovie = data.getInt(data.getColumnIndex(PopularMoviesContract.FavoriteMovieEntry.COLUMN_MOVIE_ID));
@@ -408,8 +437,6 @@ public class DetailActivity extends AppCompatActivity {
 
                 }
             }
-
-
         }
 
         @Override

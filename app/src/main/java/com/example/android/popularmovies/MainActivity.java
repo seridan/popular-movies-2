@@ -55,14 +55,11 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
     private PopularMoviesAdapter mPopularMoviesAdapter;
     private List<Movie> movieList;
-    private static List<Movie> dataBaseMovieList;
-    private ProgressBar mLoadingIndicator;
+       private ProgressBar mLoadingIndicator;
     private String queryUrl;
     private static final String TAG = MainActivity.class.getSimpleName();
     private SQLiteDatabase mDb;
-    //private static String sortBy;
-    private static final  boolean SORT_BY_FAVORITES = false;
-    private static final boolean IS_FAVORITE_FLAG = false;
+
 
 
     @Override
@@ -84,45 +81,70 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
 
-
         initLoaders();
 
     }
 
     private boolean checkIsFavorites() {
-       String getPreferedSorted = PopularMoviesPreferences
+       String getPreferedSortedString = PopularMoviesPreferences
                 .getPreferedSorted(MainActivity.this);
 
-        return getPreferedSorted.equals(getResources().getString(R.string.pref_sort_by_favorites_value));
+        return getPreferedSortedString.equals(getResources().getString(R.string.pref_sort_by_favorites_value));
+    }
+
+    private void setToolBarTittle() {
+
+        String getPreferedSortedString = PopularMoviesPreferences
+                .getPreferedSorted(MainActivity.this);
+
+        if (getPreferedSortedString.equals(getResources().getString(R.string.pref_sort_by_top_rated_value))) {
+
+            getSupportActionBar().setTitle("Popular movies (" + getResources().getString(R.string.sort_by_top_rated_label) + ")");
+
+        } else if (getPreferedSortedString.equals(getResources().getString(R.string.pref_sort_by_vote_average_value))) {
+
+            getSupportActionBar().setTitle("Popular movies (" + getResources().getString(R.string.sort_by_vote_average_label) + ")");
+
+        } else if (getPreferedSortedString.equals(getResources().getString(R.string.pref_sort_by_favorites_value))) {
+
+            getSupportActionBar().setTitle("Popular movies (" + getResources().getString(R.string.sort_by_favorites_label) + ")");
+
+        }
     }
 
     @Override
     public void onListItemClick(Movie movie) {
+
         if (!CheckIsOnline.checkConnection(MainActivity.this) && !checkIsFavorites()) {
-            Toast.makeText(getBaseContext(), "no tienes conexion", Toast.LENGTH_LONG).show();
+
+            Toast.makeText(getBaseContext(), getText(R.string.error_connection_message), Toast.LENGTH_LONG).show();
+
         }else{
             Context context = this;
+
             Class destinationClass = DetailActivity.class;
+
             Intent intentToStartDetailActivity = new Intent(context, destinationClass);
             intentToStartDetailActivity.putExtra(MOVIE_OBJECT, movie);
             startActivity(intentToStartDetailActivity);
 
         }
 
-
     }
 
     private void initLoaders(){
 
         if (CheckIsOnline.checkConnection(MainActivity.this) && !checkIsFavorites()) {
+
             getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_ID, null, new LoadNetworkData(MainActivity.this));
+
         }else if (checkIsFavorites()){
-            Toast.makeText(getBaseContext(), "has seleccionado favoritos", Toast.LENGTH_LONG).show();
-           getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
-       }else {
-            showDialog();
-            Toast.makeText(getBaseContext(), "no tienes conexion", Toast.LENGTH_LONG).show();
-        }
+
+            getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
+
+       }
+
+        setToolBarTittle();
 
     }
 
@@ -131,13 +153,21 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         // re-queries for all favorites movies
         if (CheckIsOnline.checkConnection(MainActivity.this) && !checkIsFavorites()) {
+
             getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, null, new LoadNetworkData(MainActivity.this));
+
         }else if (checkIsFavorites()){
-            Toast.makeText(getBaseContext(), "has seleccionado favoritos", Toast.LENGTH_LONG).show();
+
             getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
+
         }else {
-            Toast.makeText(getBaseContext(), "no tienes conexion", Toast.LENGTH_LONG).show();
+
+            //Toast.makeText(getBaseContext(), getText(R.string.error_connection_message_main_activity), Toast.LENGTH_LONG).show();
+            showDialog();
+
         }
+
+        setToolBarTittle();
     }
 
     @Override
@@ -149,23 +179,35 @@ public class MainActivity extends AppCompatActivity
             //Check if a loader is already initialized then restart, if not then we initialize it.
             if (loader != null) {
                 if (PREFERENCES_HAVE_BEEN_UPDATED) {
+
                     getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
+
                     PREFERENCES_HAVE_BEEN_UPDATED = false;
+
                 } else
+
                     getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_CURSOR_ID, null, new LoadCursor(MainActivity.this));
+
             }
+
         } else {
+
             //Check if a loader is not null.
             Loader loader = getSupportLoaderManager().getLoader(POPULAR_MOVIES_LOADER_ID);
+
             //Check if a loader is already initialized then restart, if not then we initialize it.
             if (loader != null) {
                 if (PREFERENCES_HAVE_BEEN_UPDATED) {
+
                     getSupportLoaderManager().restartLoader(POPULAR_MOVIES_LOADER_ID, null, new LoadNetworkData(MainActivity.this));
+
                     PREFERENCES_HAVE_BEEN_UPDATED = false;
+
                 } else getSupportLoaderManager().initLoader(POPULAR_MOVIES_LOADER_ID, null, new LoadNetworkData(MainActivity.this));
             }
         }
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -182,11 +224,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuOptionsThatWasSelected = item.getItemId();
+
         if (menuOptionsThatWasSelected == R.id.action_settings) {
             Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+
             startActivity(startSettingsActivity);
+
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -212,6 +258,9 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /**
+     * This Loader cursor inner class is used to handle de database.
+     */
 
     private class LoadCursor implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -270,7 +319,6 @@ public class MainActivity extends AppCompatActivity
             if (data == null || data.getCount() == 0 ) {
                 mPopularMoviesAdapter.setMovieList(dataBaseMovieList);
 
-
             }else {
                 while (data.moveToNext()) {
 
@@ -286,26 +334,22 @@ public class MainActivity extends AppCompatActivity
 
                     dataBaseMovieList.add(mMovie);
 
-
-
-
                 }
                 mPopularMoviesAdapter.setMovieList(dataBaseMovieList);
 
             }
-
-
 
         }
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
 
-
-
-
         }
     }
+
+    /**
+     * This Loader String inner class is used to handle de network database.
+     */
 
     private class LoadNetworkData implements LoaderManager.LoaderCallbacks<String> {
 
