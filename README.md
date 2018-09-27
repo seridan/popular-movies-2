@@ -6,6 +6,7 @@ The API Key must be set in the String variable called apiKey in the NetworkUtils
 
 
 Project Overview
+
 Welcome back to Popular Movies! In this second and final stage, you’ll add additional functionality to the app you built in Stage 1.
 
 You’ll add more information to your movie details view:
