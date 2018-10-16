@@ -1,4 +1,7 @@
 # Popular-Movies-2
+
+# Project video link: https://youtu.be/IKLFspbWd30
+
 Project 2 Android Nanodegree Developer This project needs to set a The Movie Database api key. 
 To fetch popular movies, you will use the API from themoviedb.org. 
 If you don’t already have an account, you will need to create one in order to request an API Key. 
