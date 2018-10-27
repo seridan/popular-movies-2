@@ -94,25 +94,7 @@ public class JsonUtils {
         return null;
     }
 
-    //This method is to use with append to response query.
-   /* public static String getDetailImage(String json) throws JSONException {
-        String filePath;
-        JSONObject parentObject = new JSONObject(json);
-        JSONObject imagesObject = parentObject.optJSONObject(IMAGES_PATH);
-        JSONArray backDropArray = imagesObject.getJSONArray(BACKDROPS);
-
-        if (backDropArray != null && backDropArray.length() > 0) {
-
-            JSONObject backDroPObject = backDropArray.getJSONObject(0);
-            if (backDroPObject != null) {
-                filePath = backDroPObject.getString(FILE_PATH);
-                Log.v(TAG, "parse filepath " + filePath);
-                return filePath;
-            }
-        }
-        return null;
-    }*/
-
+   
     public static List<String> getVideosMovie(String movieJson) throws JSONException {
         JSONObject parentObject = new JSONObject(movieJson);
         //JSONObject videosObject = parentObject.optJSONObject(VIDEOS_PATH);
@@ -134,18 +116,14 @@ public class JsonUtils {
 
     public static List<String> getReviewsMovie(String movieJson) throws JSONException {
         JSONObject parentObject = new JSONObject(movieJson);
-        //JSONObject reviewObject = parentObject.optJSONObject(REVIEWS_PATH);
         JSONArray reviewsArray = parentObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
         if (reviewsArray != null) {
             for (int i = 0; i < reviewsArray.length(); i++) {
-                //stringList.add((String)reviewsArray.opt(i));
                 JSONObject reviews = reviewsArray.getJSONObject(i++);
                 String author = reviews.getString(AUTHOR_PATH);
                 String content = reviews.getString(CONTENT_PATH);
-                //stringList.add((String) reviews.get(CONTENT_PATH));
-                //stringList.add((String) reviews.get("author"));
                 stringList.add("Author: " + author + "\n" + content + "\n");
             }
             Log.v(TAG, "reviews array " + stringList.toString());
