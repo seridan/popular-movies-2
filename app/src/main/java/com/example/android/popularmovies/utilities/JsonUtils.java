@@ -97,7 +97,6 @@ public class JsonUtils {
    
     public static List<String> getVideosMovie(String movieJson) throws JSONException {
         JSONObject parentObject = new JSONObject(movieJson);
-        //JSONObject videosObject = parentObject.optJSONObject(VIDEOS_PATH);
         JSONArray videosArray = parentObject.getJSONArray(RESULTS);
         List<String> stringList = new ArrayList<>();
 
